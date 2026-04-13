@@ -1,0 +1,59 @@
+# --- 환경 변수 및 비밀 정보 ---
+.env
+.venv
+env/
+venv/
+ENV/
+
+# --- 파이썬 컴파일 및 캐시 파일 ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- 로그 및 데이터베이스 ---
+*.log
+*.sqlite
+*.db
+
+# --- VS Code 설정 ---
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# --- 운영체제 임시 파일 ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# --- 테스트 및 커버리지 ---
+.target/
+.pytest_cache/
+.nosepy
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- 인증서 파일 ---
+*.pem
