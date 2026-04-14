@@ -57,3 +57,6 @@ coverage.xml
 
 # --- 인증서 파일 ---
 *.pem
+
+# --- mwb 파일 ---
+*.mwb
