@@ -1,4 +1,5 @@
 import os
+from urllib.parse import quote_plus
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,9 +15,10 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 SSL_CA = os.getenv("SSL_CA")
 
-# Azure MySQL 연결 URL
+# Azure MySQL 연결 URL (특수문자 포함 비밀번호를 위해 quote_plus 사용)
+encoded_password = quote_plus(DB_PASSWORD) if DB_PASSWORD else ""
 DATABASE_URL = (
-    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}?charset=utf8mb4"
+    f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}/{DB_NAME}?charset=utf8mb4"
 )
 
 # SSL 설정 (인증서가 있는 경우에만)
@@ -31,8 +33,6 @@ if SSL_CA:
 
     if os.path.exists(SSL_CA_PATH):
         connect_args["ssl"] = {"ca": SSL_CA_PATH}
-
-print(SSL_CA_PATH)
 
 # DB 엔진 생성
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
