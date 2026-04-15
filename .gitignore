@@ -57,3 +57,6 @@ coverage.xml
 
 # --- 인증서 파일 ---
 *.pem
+
+# --- 제미나이 md 파일 ---
+GEMINI.md
