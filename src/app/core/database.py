@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 # .env 파일 로드
 load_dotenv()
 
-# DB 접속 정보
+# DB 접속 정보 
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 if DB_PASSWORD:
@@ -18,13 +18,13 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 SSL_CA = os.getenv("SSL_CA")
 
-# Azure MySQL 연결 URL (특수문자 포함 비밀번호를 위해 quote_plus 사용)
+# Azure MySQL 연결 URL
 encoded_password = quote_plus(DB_PASSWORD) if DB_PASSWORD else ""
 DATABASE_URL = (
     f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}/{DB_NAME}?charset=utf8mb4"
 )
 
-# SSL 설정 (인증서가 있는 경우에만)
+# SSL 설정 
 connect_args = {}
 if SSL_CA:
     # 절대 경로인지 확인하거나, 현재 디렉토리 기준 경로 확인
