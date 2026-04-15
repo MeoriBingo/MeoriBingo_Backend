@@ -9,11 +9,9 @@ from urllib.parse import quote_plus
 # .env 파일 로드 (주석)
 load_dotenv()
 
-# DB 접속 정보 
+# DB 접속 정보
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
-if DB_PASSWORD:
-    DB_PASSWORD = quote_plus(DB_PASSWORD)
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 SSL_CA = os.getenv("SSL_CA")
@@ -24,7 +22,7 @@ DATABASE_URL = (
     f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}/{DB_NAME}?charset=utf8mb4"
 )
 
-# SSL 설정 
+# SSL 설정
 connect_args = {}
 if SSL_CA:
     # 절대 경로인지 확인하거나, 현재 디렉토리 기준 경로 확인

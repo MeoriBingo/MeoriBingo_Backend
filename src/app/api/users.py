@@ -8,7 +8,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/{user_id}", response_model=UserRead)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: Session = Depends(get_db)):
     """
     사용자의 정보를 조회합니다.
     조회 항목: email, nickname, point, streak_count, last_completed_date
@@ -20,7 +20,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/me/{user_id}", response_model=UserRead)
-def update_user_profile(
+async def update_user_profile(
     user_id: int, user_update: UserUpdate, db: Session = Depends(get_db)
 ):
     """
@@ -54,7 +54,7 @@ def update_user_profile(
 
 
 @router.patch("/mission/{user_id}", response_model=UserRead)
-def update_user_mission(
+async def update_user_mission(
     user_id: int, user_mission_update: UserMissionUpdate, db: Session = Depends(get_db)
 ):
     """
