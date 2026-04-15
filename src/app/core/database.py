@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus
 
-# .env 파일 로드
+# .env 파일 로드 (주석)
 load_dotenv()
 
 # DB 접속 정보 
