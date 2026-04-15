@@ -53,3 +53,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# 테스트용으로 DB 연결 확인하는 함수
