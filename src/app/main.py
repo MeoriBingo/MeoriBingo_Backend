@@ -3,10 +3,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 import mysql.connector
 from mysql.connector import Error
+from src.app.api.users import router as user_router
 
 load_dotenv()
 
+
 app = FastAPI()
+
+# 라우터 등록
+app.include_router(user_router, prefix="/api")
 
 # DB 설정 정보
 SSL_CA = os.getenv("SSL_CA")
