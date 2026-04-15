@@ -1,11 +1,12 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import text 
+from sqlalchemy import text
 
 # 최신 인증(카카오) 라우터와 데이터베이스 엔진 임포트
-from app.api import auth 
-from app.core.database import engine 
+from app.api import auth
+from app.core.database import engine
+from src.app.api.users import router as user_router
 
 load_dotenv()
 
@@ -14,10 +15,13 @@ app = FastAPI()
 # 1. 라우터 등록: 카카오 로그인 및 닉네임 설정 관련 API 연결
 # 기존 user_router 대신 새로운 auth.router를 사용합니다.
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(user_router, prefix="/api")
+
 
 @app.get("/")
 def read_root():
     return {"message": "FastAPI 서버가 정상 작동 중입니다."}
+
 
 @app.get("/db-test")
 def test_db_connection():
@@ -30,7 +34,7 @@ def test_db_connection():
             connection.execute(text("SELECT 1"))
             return {
                 "status": "success",
-                "message": "SQLAlchemy 엔진을 통한 Azure MySQL 연결 성공!"
+                "message": "SQLAlchemy 엔진을 통한 Azure MySQL 연결 성공!",
             }
     except Exception as e:
         # 연결 실패 시 상세 에러를 반환하여 디버깅을 돕습니다.
