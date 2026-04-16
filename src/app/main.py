@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 # 1. social 임포트 추가
-from src.app.api import auth, users, mission, social  # social 추가
+from src.app.api import auth, users, mission, social, bingo_detail  # social 추가
 from src.app.core.database import engine
 
 load_dotenv()
@@ -17,6 +17,8 @@ app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(mission.router, prefix="/api", tags=["Mission"])
 # 친구 빙고 현황 라우터 추가
 app.include_router(social.router, prefix="/api/social", tags=["Social"]) 
+# 새로 만든 상세 페이지/히스토리 라우터 등록
+app.include_router(bingo_detail.router, prefix="/api/bingo", tags=["Bingo Detail"])
 
 @app.get("/")
 def read_root():
