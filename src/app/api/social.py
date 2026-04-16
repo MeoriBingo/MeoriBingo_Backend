@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import or_, and_
 from src.app.core.database import get_db
 from src.app.models.social import Friendship  # 우리가 찾은 모델!
-from src.app.schemas.social import FriendRequestRead # 방금 만든 접시!
+from src.app.schemas.social import FriendRequestRead,FriendBingoStatus # 방금 만든 접시!
+from src.app.api import deps
+from src.app.models.user import User  
+from src.app.models.bingo import BingoBoard
 
 router = APIRouter()
 
@@ -24,3 +28,48 @@ def get_friend_requests(db: Session = Depends(get_db)):
     ).all()
 
     return requests
+
+@router.get("/friends/bingo", response_model=List[FriendBingoStatus])
+async def get_friends_bingo_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    # 1. 친구 목록 조회 (내가 요청했거나, 요청받았거나 둘 다 포함)
+    friends_query = db.query(Friendship).filter(
+        and_(
+            or_(
+                Friendship.requester_id == current_user.id,
+                Friendship.addressee_id == current_user.id
+            ),
+            Friendship.status == "ACCEPTED"
+        )
+    ).all()
+
+    friend_ids = []
+    for f in friends_query:
+        if f.requester_id == current_user.id:
+            friend_ids.append(f.addressee_id)
+        else:
+            friend_ids.append(f.requester_id)
+
+    if not friend_ids:
+        return []
+
+    # 2. 친구들의 정보와 빙고 현황 조회
+    # (참고: 실제 비즈니스 로직에 따라 Bingo 테이블과의 Join이 필요합니다)
+    results = []
+    for f_id in friend_ids:
+        friend = db.query(User).filter(User.id == f_id).first()
+        # 해당 친구의 가장 최근 빙고판 정보를 가져온다고 가정
+        bingo = db.query(BingoBoard).filter(BingoBoard.user_id == f_id).order_by(BingoBoard.created_at.desc()).first()
+        
+        if friend:
+            results.append({
+                "user_id": friend.id,
+                "nickname": friend.nickname,
+                "profile_image": friend.profile_image,
+                "bingo_count": bingo.completed_lines if bingo else 0,
+                "progress_percentage": (bingo.marked_cells / 25 * 100) if bingo else 0,
+                "last_updated": bingo.updated_at if bingo else friend.created_at
+            })
+    return results
