@@ -2,8 +2,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
+
 class BingoGenerateRequest(BaseModel):
     user_id: int
+
 
 class BingoCellBase(BaseModel):
     id: int
@@ -14,6 +16,7 @@ class BingoCellBase(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class BingoBoardResponse(BaseModel):
     id: int

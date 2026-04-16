@@ -5,18 +5,18 @@ from datetime import datetime, timedelta
 from typing import List
 
 from src.app.core.database import get_db
-from src.app.api import deps  
+from src.app.api import deps
 from src.app.models.user import User
-from src.app.models.bingo import BingoBoard, BingoCell  
+from src.app.models.bingo import BingoBoard, BingoCell
 from src.app.models.mission import Mission
 from src.app.schemas.users import (
-    UserRead, 
-    UserUpdate, 
-    UserMissionUpdate, 
-    UserStatsResponse  
+    UserRead,
+    UserUpdate,
+    UserMissionUpdate,
+    UserStatsResponse,
 )
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter()
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -87,10 +87,10 @@ async def update_user_mission(
     db.refresh(user)
     return user
 
+
 @router.get("/me/stats", response_model=UserStatsResponse)
 def get_user_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_user)
+    db: Session = Depends(get_db), current_user: User = Depends(deps.get_current_user)
 ):
     # 1. 날짜 설정 (최근 7일 - 오늘 포함)
     today = datetime.now().date()
@@ -98,42 +98,51 @@ def get_user_stats(
 
     # 2. 주간 성취 데이터 (날짜별 완료 개수)
     # BingoCell에서 해당 유저의 보드에 속한 셀들을 가져옴
-    weekly_raw = db.query(
-        func.date(BingoCell.completed_at).label("date"),
-        func.count(BingoCell.id).label("count")
-    ).join(BingoBoard, BingoCell.board_id == BingoBoard.id)\
-     .filter(
-        BingoBoard.user_id == current_user.id,
-        BingoCell.is_completed == 1,
-        func.date(BingoCell.completed_at) >= seven_days_ago
-    ).group_by(func.date(BingoCell.completed_at)).all()
+    weekly_raw = (
+        db.query(
+            func.date(BingoCell.completed_at).label("date"),
+            func.count(BingoCell.id).label("count"),
+        )
+        .join(BingoBoard, BingoCell.board_id == BingoBoard.id)
+        .filter(
+            BingoBoard.user_id == current_user.id,
+            BingoCell.is_completed == 1,
+            func.date(BingoCell.completed_at) >= seven_days_ago,
+        )
+        .group_by(func.date(BingoCell.completed_at))
+        .all()
+    )
 
     # 빈 날짜 채워주기 (그래프 끊김 방지)
     weekly_dict = {r.date: r.count for r in weekly_raw}
     weekly_stats = [
-        {"date": seven_days_ago + timedelta(days=i), 
-         "count": weekly_dict.get(seven_days_ago + timedelta(days=i), 0)}
+        {
+            "date": seven_days_ago + timedelta(days=i),
+            "count": weekly_dict.get(seven_days_ago + timedelta(days=i), 0),
+        }
         for i in range(7)
     ]
 
     # 3. 카테고리별 데이터 (전체 기간 기준)
-    category_raw = db.query(
-        Mission.category,
-        func.count(BingoCell.id).label("count")
-    ).join(BingoCell, Mission.id == BingoCell.mission_id)\
-     .join(BingoBoard, BingoCell.board_id == BingoBoard.id)\
-     .filter(
-        BingoBoard.user_id == current_user.id,
-        BingoCell.is_completed == 1
-    ).group_by(Mission.category).all()
+    category_raw = (
+        db.query(Mission.category, func.count(BingoCell.id).label("count"))
+        .join(BingoCell, Mission.id == BingoCell.mission_id)
+        .join(BingoBoard, BingoCell.board_id == BingoBoard.id)
+        .filter(BingoBoard.user_id == current_user.id, BingoCell.is_completed == 1)
+        .group_by(Mission.category)
+        .all()
+    )
 
     total_count = sum(c.count for c in category_raw)
     category_stats = [
         {
             "category": c.category,
             "count": c.count,
-            "percentage": round((c.count / total_count * 100), 1) if total_count > 0 else 0
-        } for c in category_raw
+            "percentage": (
+                round((c.count / total_count * 100), 1) if total_count > 0 else 0
+            ),
+        }
+        for c in category_raw
     ]
 
     return {
@@ -142,6 +151,6 @@ def get_user_stats(
             "nickname": current_user.nickname,
             "streak_count": current_user.streak_count,
             "weekly_stats": weekly_stats,
-            "category_stats": category_stats
-        }
+            "category_stats": category_stats,
+        },
     }

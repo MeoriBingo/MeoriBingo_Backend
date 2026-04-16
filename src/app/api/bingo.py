@@ -7,7 +7,7 @@ from src.app.models.bingo import BingoBoard, BingoCell
 from src.app.models.mission import Mission
 from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse
 
-router = APIRouter(prefix="/bingo", tags=["Bingo"])
+router = APIRouter()
 
 
 @router.post("/generate", response_model=BingoBoardResponse)
