@@ -14,14 +14,23 @@ router = APIRouter()
 
 @router.post("/login")
 async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
+    print(f"DEBUG: URL={settings.KAKAO_USER_INFO_URL}")
+    print(f"DEBUG: Token={request.accessToken}")
     # 1. 카카오 서버 인증
     async with httpx.AsyncClient() as client:
         kakao_resp = await client.get(
             settings.KAKAO_USER_INFO_URL,
-            headers={"Authorization": f"Bearer {request.accessToken}"},
+            headers={
+                "Authorization": f"Bearer {request.accessToken}",
+            "Content-type": "application/x-www-form-urlencoded;charset=utf-8"},
+            params={
+            "client_id": settings.KAKAO_REST_API_KEY, # REST API 키
+            "client_secret": settings.KAKAO_CLIENT_SECRET,
+        }
         )
 
     if kakao_resp.status_code != 200:
+        print(f"KAKAO ERROR: {kakao_resp.text}")
         raise HTTPException(status_code=401, detail="카카오 인증에 실패했습니다.")
 
     kakao_user = kakao_resp.json()
@@ -31,7 +40,7 @@ async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.social_id == kakao_id).first()
 
     if not user:
-        user = User(social_id=kakao_id, nickname=None, provider="kakao")
+        user = User(social_id=kakao_id, nickname=None)
         db.add(user)
         db.commit()
         db.refresh(user)
