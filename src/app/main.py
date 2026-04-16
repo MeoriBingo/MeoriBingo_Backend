@@ -8,6 +8,8 @@ from src.app.api import auth
 from src.app.core.database import engine
 from src.app.api import users
 from src.app.api import mission
+from src.app.api import social
+from src.app.api import bingo
 
 load_dotenv()
 
@@ -18,6 +20,8 @@ app = FastAPI()
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api")
 app.include_router(mission.router, prefix="/api")
+app.include_router(social.router, prefix="/api")
+app.include_router(bingo.router, prefix="/api")
 
 
 @app.get("/")

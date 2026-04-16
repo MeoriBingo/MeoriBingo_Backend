@@ -6,6 +6,7 @@ from azure.storage.blob import BlobServiceClient
 from src.app.core.database import get_db
 from src.app.models.mission import Mission
 from src.app.schemas.mission import MissionVerifyResponse, MissionGuideRead
+from src.app.models.bingo import BingoCell
 
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
@@ -14,12 +15,14 @@ AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME", "mission-images")
 
 
-@router.post("/verify", response_model=MissionVerifyResponse)
-async def picture_upload(file: UploadFile = File(...)):
+@router.post("/verify/{cell_id}", response_model=MissionVerifyResponse)
+async def picture_upload(
+    cell_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
     """
-    미션 사진을 Azure Storage에 업로드합니다.
+    미션 사진을 Azure Storage에 업로드하고 bingo_cells 테이블의 proof_image_url을 업데이트합니다.
     - 파일 이름을 고유하게 생성하여 업로드
-    - 업로드된 사진의 URL 반환
+    - 업로드된 사진의 URL을 DB에 저장
     """
     if not AZURE_STORAGE_CONNECTION_STRING:
         raise HTTPException(
@@ -32,9 +35,14 @@ async def picture_upload(file: UploadFile = File(...)):
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail="Invalid file extension")
 
+    # DB에서 해당 셀 확인
+    cell = db.query(BingoCell).filter(BingoCell.id == cell_id).first()
+    if not cell:
+        raise HTTPException(status_code=404, detail="Bingo cell not found")
+
     try:
         # 고유한 파일 이름 생성
-        unique_filename = f"mission/user_id/{uuid.uuid4()}{file_ext}"
+        unique_filename = f"mission/cell_{cell_id}/{uuid.uuid4()}{file_ext}"
 
         # BlobServiceClient 생성
         blob_service_client = BlobServiceClient.from_connection_string(
@@ -48,20 +56,29 @@ async def picture_upload(file: UploadFile = File(...)):
         contents = await file.read()
         blob_client.upload_blob(contents, overwrite=True)
 
-        # 업로드된 파일의 URL (Azure Portal에서 컨테이너의 익명 접근 권한 설정 필요)
+        # 업로드된 파일의 URL
         image_url = blob_client.url
 
+        # DB 업데이트
+        cell.proof_image_url = image_url
+        db.commit()
+        db.refresh(cell)
+
         return MissionVerifyResponse(
-            message="Successfully uploaded", image_url=image_url, is_success=True
+            message="Successfully uploaded and updated database",
+            image_url=image_url,
+            is_success=True,
         )
 
     except Exception as e:
+        db.rollback()
         raise HTTPException(
-            status_code=500, detail=f"Failed to upload to Azure: {str(e)}"
+            status_code=500, detail=f"Failed to upload to Azure or update DB: {str(e)}"
         )
 
 
 # 미션 가이드 조회 서비스(by.서현)
+
 
 @router.get("/{mission_id}/guide", response_model=MissionGuideRead)
 def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):
@@ -69,14 +86,14 @@ def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):
     특정 미션 클릭시 "어떻게 찍으세요"라는 가이드 문구/이미지를 반환합니다.
     """
 
-    #Mission 모델에서 mission_id로 데이터 조회
-    my_mission_data = db.query(Mission).filter(Mission.id==mission_id).first()
+    # Mission 모델에서 mission_id로 데이터 조회
+    my_mission_data = db.query(Mission).filter(Mission.id == mission_id).first()
 
-    #만약 찾는 미션이 없으면 에러 생성
+    # 만약 찾는 미션이 없으면 에러 생성
     if my_mission_data is None:
         raise HTTPException(status_code=404, detail="해당 미션을 찾을 수 없습니다.")
-    
-    #MissionGuideRead에 잘 담아서 프론트로 전송
+
+    # MissionGuideRead에 잘 담아서 프론트로 전송
     return MissionGuideRead(
         guideText=f"[{my_mission_data.title}] {my_mission_data.description}"
         # guideImage=저희 가이드 이미지도 하기로 했었나욥...?

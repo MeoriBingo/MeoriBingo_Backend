@@ -16,6 +16,7 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 SSL_CA = os.getenv("SSL_CA")
 
+
 # Azure MySQL 연결 URL
 encoded_password = quote_plus(DB_PASSWORD) if DB_PASSWORD else ""
 DATABASE_URL = (
