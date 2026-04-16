@@ -3,7 +3,8 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @router.post("/point/{user_id}")
-async def grant_point(...):
+async def grant_point():
+    pass
 
 
 

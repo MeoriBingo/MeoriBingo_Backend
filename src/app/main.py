@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 # 최신 인증(카카오) 라우터와 데이터베이스 엔진 임포트
-from MeoriBingo_Backend.src.app.api import admin
+from src.app.api import admin
 from src.app.api import auth
 from src.app.core.database import engine
 from src.app.api import users
