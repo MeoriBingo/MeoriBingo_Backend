@@ -10,3 +10,10 @@ class FriendRequestRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+#친구 빙고판 반응 등록
+class FriendBingoReactionRequest(BaseModel):
+    id: int
+    board_id: int
+    reaction_type: str   # 예: "like", "clap", "heart"
