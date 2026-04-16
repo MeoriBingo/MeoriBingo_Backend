@@ -1,14 +1,16 @@
 import os
 import uuid
+
 from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 from azure.storage.blob import BlobServiceClient
+from src.app.schemas.mission import MissionVerifyResponse, MissionResponse, MissionGuideRead
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from sqlalchemy.orm import Session
+from src.app.core.database import get_db
+from src.app.models.mission import Mission
 
-# 프로젝트 구조에 맞춘 import
-from src.app.core.database import get_db 
-from src.app.models.mission import Mission 
-from src.app.schemas.mission import MissionVerifyResponse, MissionResponse
 
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
@@ -59,3 +61,28 @@ async def get_missions(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"데이터베이스 조회 중 오류 발생: {str(e)}"
         )
+
+
+
+# 미션 가이드 조회 서비스(by.서현)
+
+@router.get("/{mission_id}/guide", response_model=MissionGuideRead)
+def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):
+    """
+    특정 미션 클릭시 "어떻게 찍으세요"라는 가이드 문구/이미지를 반환합니다.
+    """
+
+    #Mission 모델에서 mission_id로 데이터 조회
+    my_mission_data = db.query(Mission).filter(Mission.id==mission_id).first()
+
+    #만약 찾는 미션이 없으면 에러 생성
+    if my_mission_data is None:
+        raise HTTPException(status_code=404, detail="해당 미션을 찾을 수 없습니다.")
+    
+    #MissionGuideRead에 잘 담아서 프론트로 전송
+    return MissionGuideRead(
+        guideText=f"[{my_mission_data.title}] {my_mission_data.description}"
+        # guideImage=저희 가이드 이미지도 하기로 했었나욥...?
+        # tips=(f"{my_mission_data.target_object}를 촬영하여 업로드하세요!")
+        ### tips에 이렇게 어떻게 찍는지 제시하는 거 맞나여????
+    )
