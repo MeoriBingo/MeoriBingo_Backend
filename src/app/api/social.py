@@ -149,19 +149,28 @@ def get_friend_requests(
     """
     나에게 온 친구 신청 목록을 조회합니다.
     """
-    # ⚠️ 임시로 내 유저 ID를 1번이라고 가정해볼게요!
-    # (나중에 고수님들이 알려주실 '현재 로그인 유저 정보'로 바꿀 부분입니다)
-    my_user_id = 1
-
-    # 1. 창고(DB)에서 조건에 맞는 데이터 긁어오기
-    # 받는 사람이 '나'이고, 상태가 'PENDING'인 것들만!
+    # 내 ID가 addressee_id로 되어 있는 신청들 전부 찾아드려
     requests = (
         db.query(Friendship)
-        .filter(Friendship.addressee_id == my_user_id, Friendship.status == "PENDING")
+        .filter(Friendship.addressee_id == current_user.id, 
+                Friendship.status == "PENDING")
         .all()
     )
 
-    return results
+    # 닉네임 합쳐서 리스트에 담아드려
+    result = []
+
+    for req in requests:
+        sender = db.query(User).filter(User.id == req.requester_id).first()
+        result.append({
+            "id": req.id,
+            "requester_id": req.requester_id,
+            "requester_nickname": sender.nickname if sender else "알 수 없음",
+            "status": req.status,
+            "created_at": req.created_at
+        })
+
+    return requests
 
 #친구 빙고판에 반응 남기기 (by지우)
 
