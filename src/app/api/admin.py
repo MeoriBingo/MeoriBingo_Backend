@@ -1,132 +1,80 @@
-# src/app/api/admin.py 내부
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from src.app.core.database import get_db
-from src.app.models.user import User
-
-router = APIRouter(prefix="/api/admin", tags=["Admin"])
-
-class PointGrantRequest(BaseModel):
-    amount: int
-    reason: str
-
-@router.post("/point/{user_id}")
-async def grant_point(user_id: str, request: PointGrantRequest, db: Session = Depends(get_db)):
-
-
-
-
-###### 포인트 부여 ######
-
-
-## 1. 포인트 부여를 위한 '데이터 틀' 만들기(관리자가 서버에서 유저에게 포인트 부여)
-
-from pydantic import BaseModel
-
-# 포인트를 부여할 때 필요한 정보 정의
-class PointGrantRequest(BaseModel):
-    amount: int       # 부여할 포인트 양
-    reason: str      # 부여 사유 (예: "미션 성공 인증", "이벤트 참여")
-
-
-## 2. 포인트 부여 API 로직 (FastAPI)
-from fastapi import FastAPI, HTTPException
-
-app = FastAPI()
-
-# 임시 데이터베이스 역할을 하는 리스트 (실제로는 Azure DB와 연결될 부분)
-user_points_db = {
-    "user123": 100,
-    "user456": 50
-}
-
-@app.post("/api/admin/point/{user_id}")
-async def grant_point(user_id: str, request: PointGrantRequest):
-    # 1. 유저가 존재하는지 확인
-    if user_id not in user_points_db:
-        raise HTTPException(status_code=404, detail="존재하지 않는 사용자입니다.")
-    
-    # 2. 포인트 추가 로직
-    old_point = user_points_db[user_id]
-    new_point = old_point + request.amount
-    user_points_db[user_id] = new_point
-    
-    # 3. 결과 반환
-    return {
-        "message": f"{user_id}님에게 {request.amount} 포인트가 부여되었습니다.",
-        "previous_point": old_point,
-        "current_point": new_point,
-        "reason": request.reason
-    }
-
-
-
-###### 포인트 내역 조회 ######
-
-## 1 . 내역 저장을 위한 데이터 구조 설계(조회 기능을 만들기 위해, 먼저 포인트를 부여할 때마다 기록 저장)
-
-from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
-# 1. 내역 한 줄에 들어갈 정보 정의
-class PointHistory(BaseModel):
-    timestamp: datetime  # 언제
-    amount: int         # 얼마를 (양수는 적립, 음수는 사용)
-    reason: str        # 왜
-    status: str        # 적립/사용 구분
+# 팀원들의 공용 설정 임포트
+from src.app.core.database import get_db
+from src.app.models.user import User
 
-# 2. 여러 개의 내역을 담을 응답 형식
+# 1. 라우터 설정 (main.py와 연결되는 통로)
+router = APIRouter(prefix="/api/admin", tags=["Admin"])
+
+# 2. 데이터 구조 정의 (Pydantic 모델)
+class PointGrantRequest(BaseModel):
+    amount: int       # 부여할 포인트 양
+    reason: str      # 부여 사유
+
+class PointHistory(BaseModel):
+    timestamp: datetime
+    amount: int
+    reason: str
+    status: str
+
 class UserPointResponse(BaseModel):
     user_id: str
     current_total: int
     history: List[PointHistory]
 
+# --- 임시 데이터 (DB 연결 전 테스트용으로 남겨두실 경우) ---
+# 실제 DB를 사용한다면 이 부분은 나중에 삭제해도 됩니다.
+user_data_mock = {} 
 
-## 2. 포인트 부여 시 기록 남기기 [POST 수정] (조회 기능을 만들기 위해, 앞서 만든 grant_point 함수가 실행될 때마다 내역 리스트에 데이터를 추가하도록 코드를 보완)
-
-# 가상의 DB (메모리에 저장)
-user_data = {
-    "user123": {
-        "total": 100,
-        "history": []
-    }
-}
-
-@app.post("/api/admin/point/{user_id}")
-async def grant_point(user_id: str, request: PointGrantRequest):
-    if user_id not in user_data:
-        # 새로운 유저라면 초기화
-        user_data[user_id] = {"total": 0, "history": []}
+# 3. 포인트 부여 API (POST)
+@router.post("/point/{user_id}")
+async def grant_point(
+    user_id: str, 
+    request: PointGrantRequest, 
+    db: Session = Depends(get_db)
+):
+    # [로직] DB에서 유저 찾기
+    user = db.query(User).filter(User.id == user_id).first()
     
-    # 1. 포인트 계산
-    user_data[user_id]["total"] += request.amount
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="존재하지 않는 사용자입니다."
+        )
     
-    # 2. 내역 기록 추가 (이 부분이 중요!)
-    new_history = PointHistory(
-        timestamp=datetime.now(),
-        amount=request.amount,
-        reason=request.reason,
-        status="적립" if request.amount > 0 else "사용"
-    )
-    user_data[user_id]["history"].append(new_history)
+    # 포인트 추가
+    user.point += request.amount
     
-    return {"message": "포인트 부여 및 내역 기록 완료"}
+    try:
+        db.commit()
+        db.refresh(user)
+        return {
+            "message": f"{user_id}님에게 {request.amount} 포인트가 부여되었습니다.",
+            "current_point": user.point,
+            "reason": request.reason
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="DB 저장 중 오류 발생")
 
-
-## 3. 포인트 내역 조회 API 만들기 [GET] (명세서에 있던 api/admin/point/{user_id} 기능 구현)
-
-@app.get("/api/admin/point/{user_id}", response_model=UserPointResponse)
-async def get_user_point_history(user_id: str):
-    if user_id not in user_data:
+# 4. 포인트 내역 조회 API (GET)
+@router.get("/point/{user_id}", response_model=UserPointResponse)
+async def get_user_point_history(user_id: str, db: Session = Depends(get_db)):
+    # [로직] DB에서 유저 조회
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user:
         raise HTTPException(status_code=404, detail="유저를 찾을 수 없습니다.")
     
+    # 현재는 User 모델에 point만 있다면 아래처럼 반환합니다.
+    # (실제 내역 리스트는 별도의 로그 테이블이 필요하지만, 우선 기본 틀을 맞췄습니다.)
     return UserPointResponse(
         user_id=user_id,
-        current_total=user_data[user_id]["total"],
-        history=user_data[user_id]["history"]
+        current_total=user.point,
+        history=[] # 내역 저장용 테이블이 완성되면 여기에 데이터를 채웁니다.
     )
-
-
-return {"message": f"{user_id} 포인트 부여 성공"}
