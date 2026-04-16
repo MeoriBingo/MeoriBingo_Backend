@@ -58,11 +58,37 @@ class FriendBingoStatus(BaseModel):
     class Config:
         from_attributes = True
 
+
 # 3. 친구 목록 전체 응답 모델 수정
 class FriendListResponse(BaseModel):
     status: str
     message: str
     data: List[FriendBingoStatus] 
+
+#친구 빙고 반응 (by지우)
+#보낼 때
+class ReactionCreate(BaseModel):
+    id: int
+    user_id: int
+    bingo_board_id: int
+    reaction_type: str 
+
+# 보여줄  때
+class ReactionRead(BaseModel):
+    id: int
+    user_id: int
+    reaction_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# 친구 목록 조회 - 친구 한 명
+class FriendItem(BaseModel):
+    id: int
+    nickname: str
+    profile_image_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -75,3 +101,5 @@ class FriendDeleteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+    data: List[FriendItem]
+

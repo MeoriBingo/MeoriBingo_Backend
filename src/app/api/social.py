@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from typing import List
 from sqlalchemy import or_, and_
 from src.app.core.database import get_db
-from src.app.models.social import Friendship
+from src.app.models.social import Friendship,BingoReaction
 from src.app.schemas.social import (
     FriendshipCreate,
     FriendshipRead,
@@ -12,7 +12,12 @@ from src.app.schemas.social import (
     FriendRequestRead,
     FriendBingoStatus,
     FriendListResponse,
-    FriendDeleteResponse
+    FriendRequestRead,
+    FriendBingoStatus,
+    FriendListResponse,
+    FriendDeleteResponse,
+    ReactionCreate,  
+    ReactionRead
 )
 from src.app.api import deps
 from src.app.models.user import User
@@ -159,7 +164,50 @@ def get_friend_requests(
         .all()
     )
 
-    return requests
+    return results
+
+#친구 빙고판에 반응 남기기 (by지우)
+
+@router.post("/friends/bingo/react", response_model=ReactionRead)
+async def create_bingo_reaction(
+    reaction_in: ReactionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    친구의 빙고판에 반응을 남깁니다.
+    """
+    # 1. 대상 빙고판이 존재하는지 확인
+    target_board = db.query(BingoBoard).filter(BingoBoard.id == reaction_in.bingo_board_id).first()
+    if not target_board:
+        raise HTTPException(status_code=404, detail="빙고판을 찾을 수 없습니다.")
+
+    # 2. 내 자신에게는 반응을 남길 수 없게 하거나(선택사항), 친구 사이인지 확인
+    if target_board.user_id != current_user.id:
+        is_friend = db.query(Friendship).filter(
+            and_(
+                or_(
+                    and_(Friendship.requester_id == current_user.id, Friendship.addressee_id == target_board.user_id),
+                    and_(Friendship.requester_id == target_board.user_id, Friendship.addressee_id == current_user.id)
+                ),
+                Friendship.status == "ACCEPTED"
+            )
+        ).first()
+
+        if not is_friend:
+            raise HTTPException(status_code=403, detail="친구의 빙고판에만 반응을 남길 수 있습니다.")
+
+    # 3. 반응 저장
+    new_reaction = BingoReaction(
+        user_id=current_user.id,
+        bingo_board_id=reaction_in.bingo_board_id,
+        reaction_type=reaction_in.reaction_type
+    )
+    db.add(new_reaction)
+    db.commit()
+    db.refresh(new_reaction)
+
+    return new_reaction
 
 @router.get("/friends", response_model=FriendListResponse)
 def get_friend_list(
@@ -220,6 +268,7 @@ def get_friend_list(
         "message": "친구 목록 및 빙고 현황 조회가 완료되었습니다.",
         "data": results
     }
+
 @router.delete("/friends/{friend_id}", response_model=FriendDeleteResponse)
 def delete_friend(
     friend_id: int,
@@ -255,5 +304,5 @@ def delete_friend(
     return {
         "status": "success",
         "message": "요청이 성공적으로 처리되었습니다.",
-        "data": {"deleted_friend_id": friend_id}
+        "data": {friend_id: "친구 관계가 삭제되었습니다."}
     }
