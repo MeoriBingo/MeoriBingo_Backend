@@ -4,11 +4,7 @@ from sqlalchemy import or_
 from typing import List
 from sqlalchemy import or_, and_
 from src.app.core.database import get_db
-<<<<<<< HEAD
-from src.app.models.social import Friendship, BingoReaction  # 우리가 찾은 모델!
-from src.app.schemas.social import FriendRequestRead,FriendBingoStatus,ReactionCreate, ReactionRead # 방금 만든 접시!
-=======
-from src.app.models.social import Friendship
+from src.app.models.social import Friendship,BingoReaction
 from src.app.schemas.social import (
     FriendshipCreate,
     FriendshipRead,
@@ -16,14 +12,13 @@ from src.app.schemas.social import (
     FriendRequestRead,
     FriendBingoStatus,
     FriendListResponse,
+    FriendDeleteResponse,
+    ReactionCreate,  
+    ReactionRead
 )
->>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b
 from src.app.api import deps
 from src.app.models.user import User
 from src.app.models.bingo import BingoBoard
-<<<<<<< HEAD
-router = APIRouter()
-=======
 from src.app.api.deps import get_current_user
 
 
@@ -145,7 +140,6 @@ async def create_friend_request(
 
     return new_friendship
 
->>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b
 
 @router.get("/friends/requests", response_model=List[FriendRequestRead])
 def get_friend_requests(
@@ -155,30 +149,6 @@ def get_friend_requests(
     """
     나에게 온 친구 신청 목록을 조회합니다.
     """
-<<<<<<< HEAD
-    # 내 ID가 addressee_id로 되어 있는 신청들 전부 찾아드려
-    requests = (
-        db.query(Friendship)
-        .filter(
-            Friendship.addressee_id == current_user.id,
-            Friendship.status == "PENDING"
-        )
-        .all()
-    )
-
-    # 닉네임 합쳐서 리스트에 담아드려
-    result = []
-    for req in requests:
-        sender = db.query(User).filter(User.id == req.requester_id).first()
-
-        result.append({
-            "id": req.id,
-            "requester_id": req.requester_id,
-            "requester_nickname": sender.nickname if sender else "알 수 없음",
-            "status": req.status,
-            "created_at": req.created_at
-        })
-=======
     # ⚠️ 임시로 내 유저 ID를 1번이라고 가정해볼게요!
     # (나중에 고수님들이 알려주실 '현재 로그인 유저 정보'로 바꿀 부분입니다)
     my_user_id = 1
@@ -190,63 +160,7 @@ def get_friend_requests(
         .filter(Friendship.addressee_id == my_user_id, Friendship.status == "PENDING")
         .all()
     )
->>>>>>> main
 
-    return requests
-
-
-@router.get("/friends/bingo", response_model=List[FriendBingoStatus])
-async def get_friends_bingo_status(
-    db: Session = Depends(get_db), current_user: User = Depends(deps.get_current_user)
-):
-    # 1. 친구 목록 조회 (내가 요청했거나, 요청받았거나 둘 다 포함)
-    friends_query = (
-        db.query(Friendship)
-        .filter(
-            and_(
-                or_(
-                    Friendship.requester_id == current_user.id,
-                    Friendship.addressee_id == current_user.id,
-                ),
-                Friendship.status == "ACCEPTED",
-            )
-        )
-        .all()
-    )
-
-    friend_ids = []
-    for f in friends_query:
-        if f.requester_id == current_user.id:
-            friend_ids.append(f.addressee_id)
-        else:
-            friend_ids.append(f.requester_id)
-
-    if not friend_ids:
-        return []
-
-    # 2. 친구들의 정보와 빙고 현황 조회
-    # (참고: 실제 비즈니스 로직에 따라 Bingo 테이블과의 Join이 필요합니다)
-    results = []
-    for f_id in friend_ids:
-        friend = db.query(User).filter(User.id == f_id).first()
-        # 해당 친구의 가장 최근 빙고판 정보를 가져온다고 가정
-        bingo = (
-            db.query(BingoBoard)
-            .filter(BingoBoard.user_id == f_id)
-            .order_by(BingoBoard.created_at.desc())
-            .first()
-        )
-
-        if friend:
-<<<<<<< HEAD
-            results.append({
-                "user_id": friend.id,
-                "nickname": friend.nickname,
-                "profile_image": friend.profile_image,
-                "bingo_count": bingo.completed_lines if bingo else 0,
-                "progress_percentage": (bingo.marked_cells / 25 * 100) if bingo else 0,
-                "last_updated": bingo.updated_at if bingo else friend.created_at
-            })
     return results
 
 #친구 빙고판에 반응 남기기 (by지우)
@@ -291,66 +205,101 @@ async def create_bingo_reaction(
     db.refresh(new_reaction)
 
     return new_reaction
-=======
-            results.append(
-                {
-                    "user_id": friend.id,
-                    "nickname": friend.nickname,
-                    "profile_image": friend.profile_image,
-                    "bingo_count": bingo.completed_lines if bingo else 0,
-                    "progress_percentage": (
-                        (bingo.marked_cells / 25 * 100) if bingo else 0
-                    ),
-                    "last_updated": bingo.updated_at if bingo else friend.created_at,
-                }
-            )
-    return results
 
-
-@router.get("/friends/me", response_model=FriendListResponse)
+@router.get("/friends", response_model=FriendListResponse)
 def get_friend_list(
-    db: Session = Depends(get_db), current_user: User = Depends(deps.get_current_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
-    내 친구 목록을 조회합니다.
+    내 친구 목록과 각 친구의 최신 빙고 현황을 함께 조회합니다.
     """
-    # STEP 1: ACCEPTED 친구 관계 조회
-    friendships = (
-        db.query(Friendship)
-        .filter(
-            and_(
-                or_(
-                    Friendship.requester_id == current_user.id,
-                    Friendship.addressee_id == current_user.id,
-                ),
-                Friendship.status == "ACCEPTED",
-            )
+    # STEP 1: 나랑 연결된 '수락됨(ACCEPTED)' 상태의 친구 관계 모두 찾기
+    friendships = db.query(Friendship).filter(
+        and_(
+            or_(
+                Friendship.requester_id == current_user.id,
+                Friendship.addressee_id == current_user.id
+            ),
+            Friendship.status == "ACCEPTED"
         )
-        .all()
-    )
+    ).all()
 
-    # STEP 2: 상대방 ID 추출
-    friend_ids = []
-    for fs in friendships:
-        if fs.requester_id == current_user.id:
-            friend_ids.append(fs.addressee_id)
-        else:
-            friend_ids.append(fs.requester_id)
+    # STEP 2: 친구 관계 데이터에서 '내가 아닌 상대방의 ID' 출력
+    friend_ids = [
+        fs.addressee_id if fs.requester_id == current_user.id else fs.requester_id 
+        for fs in friendships
+    ]
 
-    # STEP 3: 친구가 없으면 빈 배열 반환
+    # 친구가 한 명도 없다면 바로 빈 결과 반환
     if not friend_ids:
         return {
             "status": "success",
-            "message": "요청이 성공적으로 처리되었습니다.",
-            "data": [],
+            "message": "친구가 없습니다.",
+            "data": []
         }
 
-    # STEP 4: 친구들 정보 가져오기
+    # STEP 3: 골라낸 친구 ID들을 기반으로 유저 정보와 빙고 정보를 합치기
+    results = []
+    
     friends = db.query(User).filter(User.id.in_(friend_ids)).all()
+
+    for friend in friends:
+        # 각 친구의 가장 최근(최신순) 빙고판 하나를 가져옵니다.
+        bingo = db.query(BingoBoard).filter(
+            BingoBoard.user_id == friend.id
+        ).order_by(BingoBoard.created_at.desc()).first()
+        
+        # 친구의 기본 정보 + 빙고 현황 데이터를 합체!
+        results.append({
+            "user_id": friend.id,
+            "nickname": friend.nickname,
+            "profile_image": friend.profile_image,
+            "bingo_count": bingo.completed_lines if bingo else 0,
+            "progress_percentage": (bingo.marked_cells / 25 * 100) if bingo else 0,
+            "last_updated": bingo.updated_at if bingo else friend.created_at
+        })
+
+    return {
+        "status": "success",
+        "message": "친구 목록 및 빙고 현황 조회가 완료되었습니다.",
+        "data": results
+    }
+
+@router.delete("/friends/{friend_id}", response_model=FriendDeleteResponse)
+def delete_friend(
+    friend_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    친구 관계를 삭제합니다. (나와 상대방 사이의 모든 관계 데이터 삭제)
+    """
+    # 1. 나와 상대방 사이의 Friendship 데이터를 찾기
+    friendship = db.query(Friendship).filter(
+        and_(
+            or_(
+                and_(Friendship.requester_id == current_user.id, Friendship.addressee_id == friend_id),
+                and_(Friendship.requester_id == friend_id, Friendship.addressee_id == current_user.id)
+            ),
+            Friendship.status == "ACCEPTED"  # 이미 친구인 상태만 삭제 가능하도록 설정
+        )
+    ).first()
+
+    # 2. 만약 친구 관계가 없다면 404 에러를 던지기
+    if not friendship:
+        raise HTTPException(status_code=404, detail="친구 관계를 찾을 수 없습니다.")
+
+    # 3. 데이터 삭제 수행
+    try:
+        db.delete(friendship)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="친구 삭제 중 오류가 발생했습니다.")
 
     return {
         "status": "success",
         "message": "요청이 성공적으로 처리되었습니다.",
-        "data": friends,
+        "data": {friend_id: "친구 관계가 삭제되었습니다."}
     }
->>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b

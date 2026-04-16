@@ -35,17 +35,16 @@ class FriendRequestRead(BaseModel):
         from_attributes = True
 
 
-# 친구 신청 목록 조회 (신청한 사람의 정보를 포함하는 것이 좋습니다)
+# 1. 친구 신청 목록 조회
 class FriendRequestRead(BaseModel):
     id: int
     requester_id: int
-    requester_nickname: Optional[str] = None  # 화면에 표시할 닉네임 추가
-    status: str  # PENDING, ACCEPTED 등 상태값
+    requester_nickname: Optional[str] = None
+    status: str
     created_at: datetime
 
     class Config:
         from_attributes = True
-
 
 # 친구 빙고 현황 조회
 class FriendBingoStatus(BaseModel):
@@ -53,13 +52,19 @@ class FriendBingoStatus(BaseModel):
     nickname: str
     profile_image: Optional[str] = None
     bingo_count: int  # 완성된 빙고 줄 수
-    progress_percentage: float  # 전체 칸 대비 채워진 비율 (0.0 ~ 100.0)
+    progress_percentage: float
     last_updated: Optional[datetime] = None
 
     class Config:
         from_attributes = True
 
-<<<<<<< HEAD
+
+# 3. 친구 목록 전체 응답 모델 수정
+class FriendListResponse(BaseModel):
+    status: str
+    message: str
+    data: List[FriendBingoStatus] 
+
 #친구 빙고 반응 (by지우)
 #보낼 때
 class ReactionCreate(BaseModel):
@@ -77,7 +82,7 @@ class ReactionRead(BaseModel):
 
     class Config:
         from_attributes = True
-=======
+
 
 # 친구 목록 조회 - 친구 한 명
 class FriendItem(BaseModel):
@@ -88,10 +93,13 @@ class FriendItem(BaseModel):
     class Config:
         from_attributes = True
 
-
-# 친구 목록 조회 - 전체 응답
-class FriendListResponse(BaseModel):
+# 친구 삭제 성공 시 응답 모델
+class FriendDeleteResponse(BaseModel):
     status: str
     message: str
+    data: dict 
+
+    class Config:
+        from_attributes = True
     data: List[FriendItem]
->>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b
+
