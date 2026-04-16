@@ -109,8 +109,8 @@ def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):
 
     # MissionGuideRead에 잘 담아서 프론트로 전송
     return MissionGuideRead(
-        guideText=f"[{my_mission_data.title}] {my_mission_data.description}"
+        guideText=f"[{my_mission_data.title}] {my_mission_data.description}",
         # guideImage=저희 가이드 이미지도 하기로 했었나욥...?
-        # tips=(f"{my_mission_data.target_object}를 촬영하여 업로드하세요!")
-        ### tips에 이렇게 어떻게 찍는지 제시하는 거 맞나여????
+        tips=(f"{my_mission_data.target_object}를 촬영하여 업로드하세요!")
+        ### tips에 'xxx'을 촬영하세요 일단 이런식으로 해두겠습니다
     )

@@ -16,6 +16,7 @@ from src.app.schemas.social import (
 from src.app.api import deps
 from src.app.models.user import User
 from src.app.models.bingo import BingoBoard
+from src.app.api.deps import get_current_user
 
 
 router = APIRouter(prefix="/social", tags=["Social"])
@@ -138,10 +139,37 @@ async def create_friend_request(
 
 
 @router.get("/friends/requests", response_model=List[FriendRequestRead])
-def get_friend_requests(db: Session = Depends(get_db)):
+def get_friend_requests(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
     """
     나에게 온 친구 신청 목록을 조회합니다.
     """
+<<<<<<< HEAD
+    # 내 ID가 addressee_id로 되어 있는 신청들 전부 찾아드려
+    requests = (
+        db.query(Friendship)
+        .filter(
+            Friendship.addressee_id == current_user.id,
+            Friendship.status == "PENDING"
+        )
+        .all()
+    )
+
+    # 닉네임 합쳐서 리스트에 담아드려
+    result = []
+    for req in requests:
+        sender = db.query(User).filter(User.id == req.requester_id).first()
+
+        result.append({
+            "id": req.id,
+            "requester_id": req.requester_id,
+            "requester_nickname": sender.nickname if sender else "알 수 없음",
+            "status": req.status,
+            "created_at": req.created_at
+        })
+=======
     # ⚠️ 임시로 내 유저 ID를 1번이라고 가정해볼게요!
     # (나중에 고수님들이 알려주실 '현재 로그인 유저 정보'로 바꿀 부분입니다)
     my_user_id = 1
@@ -153,6 +181,7 @@ def get_friend_requests(db: Session = Depends(get_db)):
         .filter(Friendship.addressee_id == my_user_id, Friendship.status == "PENDING")
         .all()
     )
+>>>>>>> main
 
     return requests
 
