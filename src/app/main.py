@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 # 1. social 임포트 추가
 from src.app.api import auth, users, mission, social, bingo_detail, admin
-from src.app.core.database import engine, Base
+from src.app.core.database import engine
 from src.app.api import users
 from src.app.api import mission
 from src.app.api import social
@@ -13,8 +13,8 @@ from src.app.api import bingo
 from src.app.api import bingo_detail
 from src.app.api import admin
 
-from src.app.models import social, bingo, user
-Base.metadata.create_all(bind=engine)
+
+
 
 load_dotenv()
 
