@@ -1,12 +1,26 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
-# 친구 신청 목록 조회
+# 친구 신청 목록 조회 (신청한 사람의 정보를 포함하는 것이 좋습니다)
 class FriendRequestRead(BaseModel):
     id: int
     requester_id: int
-    re
+    requester_nickname: Optional[str] = None  # 화면에 표시할 닉네임 추가
+    status: str  # PENDING, ACCEPTED 등 상태값
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# 친구 빙고 현황 조회
+class FriendBingoStatus(BaseModel):
+    user_id: int
+    nickname: str
+    profile_image: Optional[str] = None
+    bingo_count: int  # 완성된 빙고 줄 수
+    progress_percentage: float  # 전체 칸 대비 채워진 비율 (0.0 ~ 100.0)
+    last_updated: Optional[datetime] = None
 
     class Config:
         from_attributes = True
