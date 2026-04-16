@@ -7,7 +7,6 @@ class MissionVerifyResponse(BaseModel):
     image_url: str
     is_success: bool = True
 
-<<<<<<< HEAD
 class MissionResponse(BaseModel):
     id: int
     title: str
@@ -19,7 +18,6 @@ class MissionResponse(BaseModel):
 
     class Config:
         from_attributes = True
-=======
 # 미션 가이드 조회하기 (by. 서현)
 class MissionGuideRead(BaseModel):
     guideText: str
@@ -28,4 +26,3 @@ class MissionGuideRead(BaseModel):
 
     class Config:
         from_attributes = True
->>>>>>> origin/main

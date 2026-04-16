@@ -5,7 +5,8 @@ from datetime import datetime
 class FriendRequestRead(BaseModel):
     id: int
     requester_id: int
-    re
+    requester_nickname: str
+    status: str
     created_at: datetime
 
     class Config:
