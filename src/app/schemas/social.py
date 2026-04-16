@@ -46,6 +46,7 @@ class FriendRequestRead(BaseModel):
     class Config:
         from_attributes = True
 
+
 # 친구 빙고 현황 조회
 class FriendBingoStatus(BaseModel):
     user_id: int
@@ -63,15 +64,17 @@ class FriendBingoStatus(BaseModel):
 class FriendListResponse(BaseModel):
     status: str
     message: str
-    data: List[FriendBingoStatus] 
+    data: List[FriendBingoStatus]
 
-#친구 빙고 반응 (by지우)
-#보낼 때
+
+# 친구 빙고 반응 (by지우)
+# 보낼 때
 class ReactionCreate(BaseModel):
     id: int
     user_id: int
     bingo_board_id: int
-    reaction_type: str 
+    reaction_type: str
+
 
 # 보여줄  때
 class ReactionRead(BaseModel):
@@ -93,13 +96,14 @@ class FriendItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 # 친구 삭제 성공 시 응답 모델
 class FriendDeleteResponse(BaseModel):
     status: str
     message: str
-    data: dict 
+    data: dict
 
     class Config:
         from_attributes = True
-    data: List[FriendItem]
 
+    data: List[FriendItem]

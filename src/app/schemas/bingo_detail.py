@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, date
 
+
 class BingoCellDetail(BaseModel):
     position: int
     content: str
@@ -11,6 +12,7 @@ class BingoCellDetail(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class BingoBoardHistory(BaseModel):
     id: int

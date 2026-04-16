@@ -4,14 +4,8 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 # 1. social 임포트 추가
-from src.app.api import auth, users, mission, social, bingo_detail, admin
+from src.app.api import auth, users, mission, social, bingo, bingo_detail, admin
 from src.app.core.database import engine
-from src.app.api import users
-from src.app.api import mission
-from src.app.api import social
-from src.app.api import bingo
-from src.app.api import bingo_detail
-from src.app.api import admin
 
 load_dotenv()
 
@@ -19,13 +13,12 @@ app = FastAPI()
 
 # 2. 라우터 등록
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(users.router, prefix="/api", tags=["Users"])
-app.include_router(mission.router, prefix="/api", tags=["Mission"])
-# 새로 만든 상세 페이지/히스토리 라우터 등록
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(mission.router, prefix="/api/mission", tags=["Mission"])
 app.include_router(bingo_detail.router, prefix="/api/bingo", tags=["Bingo Detail"])
-app.include_router(social.router, prefix="/api", tags=["Social"])
-app.include_router(bingo.router, prefix="/api", tags=["Bingo"])
-app.include_router(admin.router, prefix="/api/admin", tags=["Admin Point"])
+app.include_router(social.router, prefix="/api/social", tags=["Social"])
+app.include_router(bingo.router, prefix="/api/bingo", tags=["Bingo"])
+app.include_router(admin.router, prefix="/api/admin/point", tags=["Admin"])
 
 
 @app.get("/")
