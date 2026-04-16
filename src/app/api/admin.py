@@ -1,10 +1,19 @@
-from fastapi import APIRouter
+# src/app/api/admin.py 내부
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from src.app.core.database import get_db
+from src.app.models.user import User
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
+class PointGrantRequest(BaseModel):
+    amount: int
+    reason: str
+
 @router.post("/point/{user_id}")
-async def grant_point():
-    pass
+async def grant_point(user_id: str, request: PointGrantRequest, db: Session = Depends(get_db)):
+
 
 
 
@@ -119,3 +128,5 @@ async def get_user_point_history(user_id: str):
         history=user_data[user_id]["history"]
     )
 
+
+return {"message": f"{user_id} 포인트 부여 성공"}
