@@ -3,6 +3,7 @@ from src.app.core.database import Base
 from datetime import datetime
 from sqlalchemy.sql import func
 
+
 class Friendship(Base):
     __tablename__ = "friendship"
 
