@@ -12,9 +12,6 @@ from src.app.schemas.social import (
     FriendRequestRead,
     FriendBingoStatus,
     FriendListResponse,
-    FriendRequestRead,
-    FriendBingoStatus,
-    FriendListResponse,
     FriendDeleteResponse,
     ReactionCreate,  
     ReactionRead
