@@ -16,7 +16,7 @@ class User(Base):
     profile_image_url = Column(String(255), nullable=True)
 
     point = Column(Integer, default=0, nullable=False)
-    streak_count = Column(Integer, default=0, nullable=False)  # PDF의 STREAK CONUT
+    streak_count = Column(Integer, default=0, nullable=False)
 
     last_completed_date = Column(Date, nullable=True)
 
