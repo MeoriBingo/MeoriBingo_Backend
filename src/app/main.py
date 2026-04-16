@@ -6,6 +6,10 @@ from sqlalchemy import text
 # 1. social 임포트 추가
 from src.app.api import auth, users, mission, social  # social 추가
 from src.app.core.database import engine
+from src.app.api import users
+from src.app.api import mission
+from src.app.api import social
+from src.app.api import bingo
 
 load_dotenv()
 
@@ -16,12 +20,14 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(mission.router, prefix="/api", tags=["Mission"])
 # 친구 빙고 현황 라우터 추가
-app.include_router(social.router, prefix="/api/social", tags=["Social"]) 
+app.include_router(social.router, prefix="/api", tags=["Social"])
+app.include_router(bingo.router, prefix="/api", tags=["Bingo"])
+app.include_router(social.router, prefix="/api", tags=["Social"])
+
 
 @app.get("/")
 def read_root():
     return {"message": "FastAPI 서버가 정상 작동 중입니다."}
-
 
 
 @app.get("/db-test")

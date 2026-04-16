@@ -1,5 +1,5 @@
 CREATE TABLE `users` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `social_provider` varchar(255) NOT NULL COMMENT 'KAKAO / GOOGLE / NAVER',
   `social_id` varchar(255) NOT NULL COMMENT 'Unique per provider',
   `email` varchar(255) COMMENT 'nullable',
@@ -8,19 +8,19 @@ CREATE TABLE `users` (
   `point` int NOT NULL DEFAULT 0,
   `streak_count` int NOT NULL DEFAULT 0,
   `last_completed_date` date,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `friendship` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `requester_id` bigint NOT NULL,
   `addressee_id` bigint NOT NULL,
   `status` varchar(255) NOT NULL COMMENT 'PENDING / ACCEPTED / BLOCKED',
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `missions` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` text,
   `category` varchar(255) NOT NULL,
@@ -30,17 +30,17 @@ CREATE TABLE `missions` (
 );
 
 CREATE TABLE `bingo_board` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `mode` varchar(255) NOT NULL COMMENT 'NORMAL / CHALLENGE',
   `category` varchar(255) COMMENT 'CHALLENGE 모드 시 선택 영역',
   `status` varchar(255) NOT NULL COMMENT 'IN_PROGRESS / COMPLETED / EXPIRED',
   `completed_count` int NOT NULL DEFAULT 0,
-  `created_at` datetime NOT NULL COMMENT '23:59:59 타임리미트 기준점'
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '23:59:59 타임리미트 기준점'
 );
 
 CREATE TABLE `bingo_cells` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `board_id` bigint NOT NULL,
   `mission_id` bigint NOT NULL,
   `position` tinyint NOT NULL COMMENT '1~9번 칸 위치',
@@ -51,19 +51,19 @@ CREATE TABLE `bingo_cells` (
 );
 
 CREATE TABLE `point_log` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `amount` int NOT NULL COMMENT '+ 적립 / - 차감',
   `reason` varchar(255) NOT NULL COMMENT 'DAILY_COMPLETE / STREAK_BONUS 등',
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `bingo_likes` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `board_id` bigint NOT NULL,
   `user_id` bigint NOT NULL,
   `reaction_type` varchar(255) NOT NULL COMMENT '이모지 ID 등',
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE UNIQUE INDEX `uq_social` ON `users` (`social_provider`, `social_id`);
