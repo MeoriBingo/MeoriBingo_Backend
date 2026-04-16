@@ -19,17 +19,11 @@ app = FastAPI()
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(mission.router, prefix="/api", tags=["Mission"])
-# 친구 빙고 현황 라우터 추가
-<<<<<<< HEAD
-app.include_router(social.router, prefix="/api/social", tags=["Social"]) 
 # 새로 만든 상세 페이지/히스토리 라우터 등록
 app.include_router(bingo_detail.router, prefix="/api/bingo", tags=["Bingo Detail"])
-=======
 app.include_router(social.router, prefix="/api", tags=["Social"])
 app.include_router(bingo.router, prefix="/api", tags=["Bingo"])
-app.include_router(social.router, prefix="/api", tags=["Social"])
 
->>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b
 
 @app.get("/")
 def read_root():
