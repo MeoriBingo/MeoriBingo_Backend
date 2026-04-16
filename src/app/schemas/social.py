@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # 친구 신청 목록 조회 (신청한 사람의 정보를 포함하는 것이 좋습니다)
 class FriendRequestRead(BaseModel):
@@ -24,3 +24,18 @@ class FriendBingoStatus(BaseModel):
 
     class Config:
         from_attributes = True
+
+# 친구 목록 조회 - 친구 한 명
+class FriendItem(BaseModel):
+    id: int
+    nickname: str
+    profile_image_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+# 친구 목록 조회 - 전체 응답
+class FriendListResponse(BaseModel):
+    status: str
+    message: str
+    data: List[FriendItem]
