@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
+from src.app.models.social import ReactionType
 
 
 class FriendshipBase(BaseModel):
@@ -71,13 +72,13 @@ class ReactionCreate(BaseModel):
     id: int
     user_id: int
     bingo_board_id: int
-    reaction_type: str 
+    reaction_type: ReactionType 
 
 # 보여줄  때
 class ReactionRead(BaseModel):
     id: int
     user_id: int
-    reaction_type: str
+    reaction_type: ReactionType
     created_at: datetime
 
     class Config:

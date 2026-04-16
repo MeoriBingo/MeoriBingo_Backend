@@ -1,8 +1,8 @@
-from sqlalchemy import Column, BigInteger, String, Integer, DateTime, ForeignKey, func
+from sqlalchemy import Column, BigInteger, String, Integer, DateTime, ForeignKey, func, Enum as SQLEnum
 from src.app.core.database import Base
 from datetime import datetime
 from sqlalchemy.sql import func
-
+import enum
 
 class Friendship(Base):
     __tablename__ = "friendship"
@@ -31,14 +31,19 @@ class BingoLike(Base):
     reaction_type = Column(String(255), nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
-
-
+class ReactionType(str, enum.Enum):
+    HEART = "HEART"
+    FIRE = "FIRE"
+    LIKE = "LIKE"   
+    SMILE = "SMILE"
+    BAD = "BAD"
+    CRY = "CRY"
 
 class BingoReaction(Base):
     __tablename__ = "bingo_reactions"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True,autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"))          
     bingo_board_id = Column(Integer, ForeignKey("bingo_boards.id"))  
-    reaction_type = Column(String)                             
+    reaction_type = Column(SQLEnum(ReactionType), nullable=False)                            
     created_at = Column(DateTime(timezone=True), server_default=func.now())
