@@ -22,6 +22,7 @@ app.include_router(mission.router, prefix="/api", tags=["Mission"])
 # 친구 빙고 현황 라우터 추가
 app.include_router(social.router, prefix="/api", tags=["Social"])
 app.include_router(bingo.router, prefix="/api", tags=["Bingo"])
+app.include_router(social.router, prefix="/api", tags=["Social"])
 
 
 @app.get("/")

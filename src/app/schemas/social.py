@@ -21,6 +21,14 @@ class FriendshipRead(FriendshipBase):
 
     id: int
     status: str
+
+
+# 친구 신청 목록 조회 (신청한 사람의 정보를 포함하는 것이 좋습니다)
+class FriendRequestRead(BaseModel):
+    id: int
+    requester_id: int
+    requester_nickname: Optional[str] = None  # 화면에 표시할 닉네임 추가
+    status: str  # PENDING, ACCEPTED 등 상태값
     created_at: datetime
 
     class Config:
