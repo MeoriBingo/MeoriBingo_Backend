@@ -48,7 +48,7 @@ def test_db_connection():
 ###### adimin 연결 ######
 
 from fastapi import FastAPI
-from app.api.admin import admin # 파일 임포트
+from src.app.api.admin import admin # 파일 임포트
 
 app = FastAPI()
 
