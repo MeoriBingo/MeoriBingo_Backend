@@ -3,12 +3,11 @@ from sqlalchemy.orm import Session
 from typing import List
 from sqlalchemy import or_, and_
 from src.app.core.database import get_db
-from src.app.models.social import Friendship  # 우리가 찾은 모델!
-from src.app.schemas.social import FriendRequestRead,FriendBingoStatus # 방금 만든 접시!
+from src.app.models.social import Friendship, BingoReaction  # 우리가 찾은 모델!
+from src.app.schemas.social import FriendRequestRead,FriendBingoStatus,ReactionCreate, ReactionRead # 방금 만든 접시!
 from src.app.api import deps
 from src.app.models.user import User  
 from src.app.models.bingo import BingoBoard
-
 router = APIRouter()
 
 @router.get("/friends/requests", response_model=List[FriendRequestRead])
@@ -73,3 +72,46 @@ async def get_friends_bingo_status(
                 "last_updated": bingo.updated_at if bingo else friend.created_at
             })
     return results
+
+#친구 빙고판에 반응 남기기 (by지우)
+
+@router.post("/friends/bingo/react", response_model=ReactionRead)
+async def create_bingo_reaction(
+    reaction_in: ReactionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    친구의 빙고판에 반응을 남깁니다.
+    """
+    # 1. 대상 빙고판이 존재하는지 확인
+    target_board = db.query(BingoBoard).filter(BingoBoard.id == reaction_in.bingo_board_id).first()
+    if not target_board:
+        raise HTTPException(status_code=404, detail="빙고판을 찾을 수 없습니다.")
+
+    # 2. 내 자신에게는 반응을 남길 수 없게 하거나(선택사항), 친구 사이인지 확인
+    if target_board.user_id != current_user.id:
+        is_friend = db.query(Friendship).filter(
+            and_(
+                or_(
+                    and_(Friendship.requester_id == current_user.id, Friendship.addressee_id == target_board.user_id),
+                    and_(Friendship.requester_id == target_board.user_id, Friendship.addressee_id == current_user.id)
+                ),
+                Friendship.status == "ACCEPTED"
+            )
+        ).first()
+
+        if not is_friend:
+            raise HTTPException(status_code=403, detail="친구의 빙고판에만 반응을 남길 수 있습니다.")
+
+    # 3. 반응 저장
+    new_reaction = BingoReaction(
+        user_id=current_user.id,
+        bingo_board_id=reaction_in.bingo_board_id,
+        reaction_type=reaction_in.reaction_type
+    )
+    db.add(new_reaction)
+    db.commit()
+    db.refresh(new_reaction)
+
+    return new_reaction

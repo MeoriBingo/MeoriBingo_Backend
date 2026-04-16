@@ -13,14 +13,6 @@ class FriendRequestRead(BaseModel):
     class Config:
         from_attributes = True
 
-<<<<<<< HEAD
-
-#친구 빙고판 반응 등록
-class FriendBingoReactionRequest(BaseModel):
-    id: int
-    board_id: int
-    reaction_type: str   # 예: "like", "clap", "heart"
-=======
 # 친구 빙고 현황 조회
 class FriendBingoStatus(BaseModel):
     user_id: int
@@ -32,4 +24,21 @@ class FriendBingoStatus(BaseModel):
 
     class Config:
         from_attributes = True
->>>>>>> 630f1d01896cb2596fa9364d3f95e807fc1f3753
+
+#친구 빙고 반응 (by지우)
+#보낼 때
+class ReactionCreate(BaseModel):
+    id: int
+    user_id: int
+    bingo_board_id: int
+    reaction_type: str 
+
+# 보여줄  때
+class ReactionRead(BaseModel):
+    id: int
+    user_id: int
+    reaction_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
