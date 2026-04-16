@@ -11,14 +11,26 @@ class FriendshipBase(BaseModel):
 class FriendshipCreate(FriendshipBase):
     pass
 
+
 class FriendshipUpdate(BaseModel):
     user_id: int  # 액션을 수행하는 유저의 ID (addressee_id여야 함)
-    status: str   # ACCEPTED 또는 REJECTED
+    status: str  # ACCEPTED 또는 REJECTED
+
 
 class FriendshipRead(FriendshipBase):
 
     id: int
     status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# 친구 신청 목록 조회
+class FriendRequestRead(BaseModel):
+    id: int
+    requester_id: int
     created_at: datetime
 
     class Config:

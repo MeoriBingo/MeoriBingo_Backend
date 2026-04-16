@@ -10,6 +10,7 @@ class Settings:
     # 카카오 설정
     KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
     KAKAO_USER_INFO_URL = os.getenv("KAKAO_USER_INFO_URL")
+    KAKAO_CLIENT_SECRET = os.getenv("KAKAO_CLIENT_SECRET")
     
     # JWT 보안 설정
     JWT_SECRET = os.getenv("JWT_SECRET")
