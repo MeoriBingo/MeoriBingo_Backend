@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 # 최신 인증(카카오) 라우터와 데이터베이스 엔진 임포트
+from MeoriBingo_Backend.src.app.api import admin
 from src.app.api import auth
 from src.app.core.database import engine
 from src.app.api import users
@@ -41,3 +42,18 @@ def test_db_connection():
     except Exception as e:
         # 연결 실패 시 상세 에러를 반환하여 디버깅을 돕습니다.
         raise HTTPException(status_code=500, detail=f"DB 연결 실패: {str(e)}")
+
+
+
+###### adimin 연결 ######
+
+from fastapi import FastAPI
+from app.api.admin import admin # 파일 임포트
+
+app = FastAPI()
+
+# 작성하신 파일들을 등록합니다.
+app.include_router(admin.router)
+
+
+
