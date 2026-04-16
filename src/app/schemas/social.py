@@ -59,6 +59,25 @@ class FriendBingoStatus(BaseModel):
     class Config:
         from_attributes = True
 
+<<<<<<< HEAD
+#친구 빙고 반응 (by지우)
+#보낼 때
+class ReactionCreate(BaseModel):
+    id: int
+    user_id: int
+    bingo_board_id: int
+    reaction_type: str 
+
+# 보여줄  때
+class ReactionRead(BaseModel):
+    id: int
+    user_id: int
+    reaction_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+=======
 
 # 친구 목록 조회 - 친구 한 명
 class FriendItem(BaseModel):
@@ -75,3 +94,4 @@ class FriendListResponse(BaseModel):
     status: str
     message: str
     data: List[FriendItem]
+>>>>>>> 11e311d030d0a6b1f5122202e1239ec5dbd8033b
