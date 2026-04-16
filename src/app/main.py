@@ -3,26 +3,25 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
-# 최신 인증(카카오) 라우터와 데이터베이스 엔진 임포트
-from src.app.api import auth
+# 1. social 임포트 추가
+from src.app.api import auth, users, mission, social  # social 추가
 from src.app.core.database import engine
-from src.app.api import users
-from src.app.api import mission
 
 load_dotenv()
 
 app = FastAPI()
 
-# 1. 라우터 등록: 카카오 로그인 및 닉네임 설정 관련 API 연결
-# 기존 user_router 대신 새로운 auth.router를 사용합니다.
+# 2. 라우터 등록
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(users.router, prefix="/api")
-app.include_router(mission.router, prefix="/api")
-
+app.include_router(users.router, prefix="/api", tags=["Users"])
+app.include_router(mission.router, prefix="/api", tags=["Mission"])
+# 친구 빙고 현황 라우터 추가
+app.include_router(social.router, prefix="/api/social", tags=["Social"]) 
 
 @app.get("/")
 def read_root():
     return {"message": "FastAPI 서버가 정상 작동 중입니다."}
+
 
 
 @app.get("/db-test")

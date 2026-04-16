@@ -6,7 +6,8 @@ from src.app.core.database import get_db
 from src.app.models.social import Friendship  # 우리가 찾은 모델!
 from src.app.schemas.social import FriendRequestRead,FriendBingoStatus # 방금 만든 접시!
 from src.app.api import deps
-from src.app.models.bingo import Bingo
+from src.app.models.user import User  
+from src.app.models.bingo import BingoBoard
 
 router = APIRouter()
 
@@ -60,7 +61,7 @@ async def get_friends_bingo_status(
     for f_id in friend_ids:
         friend = db.query(User).filter(User.id == f_id).first()
         # 해당 친구의 가장 최근 빙고판 정보를 가져온다고 가정
-        bingo = db.query(Bingo).filter(Bingo.user_id == f_id).order_by(Bingo.created_at.desc()).first()
+        bingo = db.query(BingoBoard).filter(BingoBoard.user_id == f_id).order_by(BingoBoard.created_at.desc()).first()
         
         if friend:
             results.append({
