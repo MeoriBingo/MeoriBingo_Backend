@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 # 1. social 임포트 추가
@@ -10,6 +11,15 @@ from src.app.core.database import engine
 load_dotenv()
 
 app = FastAPI()
+
+# CORS 설정 추가
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 도메인 허용 (개발용)
+    allow_credentials=True,
+    allow_methods=["*"],  # GET, POST, OPTIONS 등 모든 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+)
 
 # 2. 라우터 등록
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
