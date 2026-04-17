@@ -23,7 +23,7 @@ async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
         "grant_type": "authorization_code",
         "client_id": settings.KAKAO_REST_API_KEY,
         "redirect_uri": settings.KAKAO_REDIRECT_URI,
-        "code": request.accessToken,
+        "code": request.authorizationCode,
         "client_secret": settings.KAKAO_CLIENT_SECRET,
     }
     print("\n" + "=" * 50)
