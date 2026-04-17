@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class LoginRequest(BaseModel):
-    accessToken: str
+    authorizationCode: str
 
 
 class NicknameRequest(BaseModel):
