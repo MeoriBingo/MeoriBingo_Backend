@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
 
 # 1. social 임포트 추가
 from src.app.api import auth, users, mission, social, bingo, bingo_detail, admin
@@ -42,3 +43,11 @@ def test_db_connection():
     except Exception as e:
         # 연결 실패 시 상세 에러를 반환하여 디버깅을 돕습니다.
         raise HTTPException(status_code=500, detail=f"DB 연결 실패: {str(e)}")
+    
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://orange-ocean-051f45900.7.azurestaticapps.net"],
+    allow_credentials=True,
+    allow_methods=["POST", "GET", "PATCH", "DELETE"],
+    allow_headers=["*"],
+)
