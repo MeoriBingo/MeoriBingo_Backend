@@ -6,17 +6,17 @@ from datetime import datetime
 class BingoGenerateRequest(BaseModel):
     user_id: int
 
-
-class BingoCellBase(BaseModel):
+class BingoCellSchema(BaseModel):
     id: int
     mission_id: int
+    mission_title: str  # 추가됨
     position: int
     status: str
-    is_completed: int
+    proof_image_url: Optional[str] = None
+    is_completed: bool # int를 bool로 자동 변환하게 설정하면 좋습니다.
 
     class Config:
         from_attributes = True
-
 
 class BingoBoardResponse(BaseModel):
     id: int
@@ -24,7 +24,17 @@ class BingoBoardResponse(BaseModel):
     mode: str
     status: str
     completed_count: int
-    cells: List[BingoCellBase]
+    cells: List[BingoCellSchema]
+
+    class Config:
+        from_attributes = True
+
+class ActiveBingoResponse(BaseModel):
+    board_id: int
+    mode: str
+    category: Optional[str]
+    completed_count: int
+    cells: List[BingoCellSchema]
 
     class Config:
         from_attributes = True
