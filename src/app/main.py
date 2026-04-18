@@ -6,7 +6,7 @@ from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 
 # 1. social 임포트 추가
-from src.app.api import auth, users, mission, social, bingo, bingo_detail, admin
+from src.app.api import auth, users, mission, social, bingo, admin
 from src.app.core.database import engine
 
 load_dotenv()
@@ -26,7 +26,6 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(mission.router, prefix="/api/mission", tags=["Mission"])
-app.include_router(bingo_detail.router, prefix="/api/bingo", tags=["Bingo Detail"])
 app.include_router(social.router, prefix="/api/social", tags=["Social"])
 app.include_router(bingo.router, prefix="/api/bingo", tags=["Bingo"])
 app.include_router(admin.router, prefix="/api/admin/point", tags=["Admin"])

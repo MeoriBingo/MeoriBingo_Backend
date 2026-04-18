@@ -1,9 +1,17 @@
-from sqlalchemy import Column, BigInteger, String, Integer, DateTime, ForeignKey, func
+from sqlalchemy import Column, BigInteger, String, Integer, DateTime, ForeignKey, func, Enum as SQLEnum
 from src.app.core.database import Base
 from datetime import datetime
 from sqlalchemy.sql import func
+import enum
 
-
+class ReactionType(str, enum.Enum):
+    HEART = "HEART"
+    FIRE = "FIRE"
+    LIKE = "LIKE"   
+    SMILE = "SMILE"
+    BAD = "BAD"
+    CRY = "CRY"
+    
 class Friendship(Base):
     __tablename__ = "friendship"
 
@@ -24,21 +32,11 @@ class PointLog(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
 
-class BingoLike(Base):
-    __tablename__ = "bingo_likes"
-
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    board_id = Column(BigInteger, ForeignKey("bingo_board.id"), nullable=False)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
-    reaction_type = Column(String(255), nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-
-
 class BingoReaction(Base):
     __tablename__ = "bingo_reactions"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    bingo_board_id = Column(Integer, ForeignKey("bingo_boards.id"))
-    reaction_type = Column(String)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    bingo_board_id = Column(BigInteger, ForeignKey("bingo_board.id"), nullable=False)
+    reaction_type = Column(SQLEnum(ReactionType), nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
