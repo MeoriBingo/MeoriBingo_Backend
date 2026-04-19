@@ -1,10 +1,27 @@
+import enum
+
 from sqlalchemy import (
     Column, BigInteger, String, Integer, SmallInteger, 
-    DateTime, ForeignKey, func, Boolean
+    DateTime, ForeignKey, func, Boolean, Enum
 )
 from src.app.core.database import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+
+# 1. Enum 클래스 정의
+class BoardStatus(enum.Enum):
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    ARCHIVED = "ARCHIVED"
+
+class BoardMode(enum.Enum):
+    NORMAL = "NORMAL"
+    CHALLENGE = "CHALLENGE"
+
+class CellStatus(enum.Enum):
+    NONE = "NONE"       # 시작 전
+    PENDING = "PENDING" # 인증 대기(검토 필요 시)
+    DONE = "DONE"       # 완료
 
 class BingoBoard(Base):
     __tablename__ = "bingo_board" 
@@ -12,11 +29,11 @@ class BingoBoard(Base):
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     
-    # 설정 정보
     title = Column(String(255), nullable=True) 
-    mode = Column(String(255), nullable=False)  # NORMAL / CHALLENGE
+    # Enum 적용
+    mode = Column(Enum(BoardMode), nullable=False, default=BoardMode.NORMAL)
     category = Column(String(255), nullable=True)
-    status = Column(String(255), nullable=False)  # IN_PROGRESS, COMPLETED 등
+    status = Column(Enum(BoardStatus), nullable=False, default=BoardStatus.IN_PROGRESS)
     
     # 달성 기록 (통계용 필드 통합)
     completed_count = Column(Integer, default=0, nullable=False)
@@ -44,7 +61,7 @@ class BingoCell(Base):
     position = Column(SmallInteger, nullable=False)  # 0~8 또는 1~9 
     
     # 상태 및 인증
-    status = Column(String(255), default="NONE", nullable=False) # NONE, PENDING, DONE
+    status = Column(Enum(CellStatus), default=CellStatus.NONE, nullable=False) # NONE, PENDING, DONE
     proof_image_url = Column(String(255), nullable=True)
     is_completed = Column(Boolean, default=False, nullable=False)
     completed_at = Column(DateTime, nullable=True)
