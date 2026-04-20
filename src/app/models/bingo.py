@@ -38,6 +38,7 @@ class BingoBoard(Base):
     
     # 달성 기록 (통계용 필드 통합)
     completed_count = Column(Integer, default=0, nullable=False)
+    completed_lines = Column(Integer, default=0,nullable=False)
     first_mission_cleared_at = Column(DateTime, nullable=True)
     one_line_cleared_at = Column(DateTime, nullable=True)
     two_lines_cleared_at = Column(DateTime, nullable=True)
