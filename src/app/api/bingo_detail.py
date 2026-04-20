@@ -54,18 +54,20 @@ def get_monthly_bingo_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ):
-    """
-    한 달간의 전체 빙고 기록을 요약해서 가져옵니다. (캘린더 뷰용)
-    """
-    # 특정 월의 데이터를 필터링
+    # 해당 월의 시작일과 다음 달 시작일 계산
+    start_date = datetime(year, month, 1)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1)
+    else:
+        end_date = datetime(year, month + 1, 1)
+
     histories = (
         db.query(BingoBoard)
         .filter(
             BingoBoard.user_id == current_user.id,
-            func.extract("year", BingoBoard.created_at) == year,
-            func.extract("month", BingoBoard.created_at) == month,
+            BingoBoard.created_at >= start_date,
+            BingoBoard.created_at < end_date, # 다음 달 1일 미만까지
         )
         .all()
     )
-
     return histories

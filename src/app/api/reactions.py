@@ -29,7 +29,7 @@ from src.app.schemas.social import (
     FriendListResponse,
     FriendDeleteResponse,
     
-    # 리액션 관련 (새로 추가하신 것)
+    # 리액션 관련 
     ReactionCreate,
     ReactionRead
 )
