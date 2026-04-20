@@ -174,7 +174,7 @@ def get_friend_list(db: Session = Depends(get_db), current_user: User = Depends(
             # DB 컬럼 completed_lines가 있어야 함! (없을 경우 0으로 기본값 처리)
             "bingo_count": getattr(bingo, "completed_lines", 0) if bingo else 0,
             "progress_percentage": (bingo.completed_count / 9 * 100) if bingo else 0,
-            "last_updated": bingo.updated_at if bingo else friend.created_at,
+            "last_updated": getattr(bingo, "updated_at", friend.created_at) if bingo else friend.created_at,
         })
     return {"status": "success", "message": "조회 완료", "data": results}
 
