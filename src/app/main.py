@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from fastapi.middleware.cors import CORSMiddleware
 
 # 1. social 임포트 추가
 from src.app.api import auth, users, mission, social, bingo, admin
@@ -13,10 +12,7 @@ load_dotenv()
 
 app = FastAPI()
 
-<<<<<<< HEAD
-=======
 # CORS 설정 추가
->>>>>>> origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # 모든 도메인 허용 (개발용)
