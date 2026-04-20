@@ -88,20 +88,39 @@ def get_received_requests(db: Session = Depends(get_db), current_user: User = De
         Friendship.status == "PENDING"
     ).all()
     
-    # [참고] 여기서 닉네임을 합치는 로직은 Pydantic Model이나 Service Layer에서 처리하는 것이 좋습니다.
     return requests
 
 
 @router.get("/friends/requests/sent", response_model=List[FriendRequestResponse])
-def get_sent_requests(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_sent_requests(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
     """
-    내가 보낸 요청 중 아직 'PENDING' 상태인 것들만 가져옴
+    내가 보낸 요청 중 아직 'PENDING' 상태인 것들만 가져와서 
+    상대방의 닉네임과 함께 반환합니다.
     """
+    # 1. 내가 보낸 대기 중인 신청들 조회
     sent_requests = db.query(Friendship).filter(
         Friendship.requester_id == current_user.id, 
         Friendship.status == "PENDING"
     ).all()
-    return sent_requests
+
+    result = []
+    for req in sent_requests:
+        # 2. 신청을 받는 사람(addressee_id)의 정보를 User 테이블에서 찾음
+        receiver = db.query(User).filter(User.id == req.addressee_id).first()
+        
+        # 3. FriendRequestResponse 스키마 필드명에 맞춰서 데이터 구성
+        result.append({
+            "friendship_id": req.id,          # 스키마의 friendship_id 매핑
+            "user_id": req.addressee_id,      # 받는 사람 ID
+            "nickname": receiver.nickname if receiver else "알 수 없음",
+            "profile_image_url": receiver.profile_image_url if receiver else None,
+            "status": req.status
+        })
+
+    return result
 
 
 @router.patch("/friends/requests/{friendship_id}", response_model=FriendshipRead)
