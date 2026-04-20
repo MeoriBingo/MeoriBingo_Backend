@@ -11,6 +11,7 @@ class User(Base):
     social_id = Column(String(255), nullable=False)
 
     email = Column(String(255), nullable=True)
+    role = Column(String(20), default="USER", nullable=False)
 
     nickname = Column(String(255), unique=True, nullable=False)
     profile_image_url = Column(String(255), nullable=True)

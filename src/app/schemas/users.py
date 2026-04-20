@@ -46,3 +46,7 @@ class UserStatsResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserRoleResponse(BaseModel):
+    user_id: int
+    role: str 
