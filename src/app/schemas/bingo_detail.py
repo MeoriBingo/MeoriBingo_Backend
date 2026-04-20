@@ -1,22 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from datetime import datetime, date
+from datetime import datetime
 
 
 class BingoCellDetail(BaseModel):
     position: int
-    content: str
-    is_marked: bool
-    image_url: Optional[str] = None
-    marked_at: Optional[datetime] = None
+    mission_title: str  
+    is_completed: bool  
+    proof_image_url: Optional[str] = None  
+    completed_at: Optional[datetime] = None  
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BingoBoardHistory(BaseModel):
     id: int
-    title: str
+    title: Optional[str] = None  
     created_at: datetime
     first_mission_cleared_at: Optional[datetime] = None
     one_line_cleared_at: Optional[datetime] = None
@@ -25,5 +24,4 @@ class BingoBoardHistory(BaseModel):
     all_cleared_at: Optional[datetime] = None
     cells: List[BingoCellDetail]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

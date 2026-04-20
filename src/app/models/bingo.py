@@ -20,7 +20,7 @@ class BoardMode(enum.Enum):
 
 class CellStatus(enum.Enum):
     NONE = "NONE"
-    IN_PROGRESS = "IN_PROGRESS"  # 추가
+    IN_PROGRESS = "IN_PROGRESS" 
     PENDING = "PENDING"
     DONE = "DONE"
 
