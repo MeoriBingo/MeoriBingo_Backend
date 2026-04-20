@@ -4,18 +4,19 @@ from datetime import datetime
 
 
 class BingoCellDetail(BaseModel):
+    id: int
     position: int
-    mission_title: str  
-    is_completed: bool  
-    proof_image_url: Optional[str] = None  
-    completed_at: Optional[datetime] = None  
+    mission_title: str
+    is_completed: bool
+    proof_image_url: Optional[str] = None
+    completed_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class BingoBoardHistory(BaseModel):
     id: int
-    title: Optional[str] = None  
+    title: Optional[str] = None
     created_at: datetime
     first_mission_cleared_at: Optional[datetime] = None
     one_line_cleared_at: Optional[datetime] = None
