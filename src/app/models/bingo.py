@@ -19,9 +19,10 @@ class BoardMode(enum.Enum):
     CHALLENGE = "CHALLENGE"
 
 class CellStatus(enum.Enum):
-    NONE = "NONE"       # 시작 전
-    PENDING = "PENDING" # 인증 대기(검토 필요 시)
-    DONE = "DONE"       # 완료
+    NONE = "NONE"
+    IN_PROGRESS = "IN_PROGRESS"  # 추가
+    PENDING = "PENDING"
+    DONE = "DONE"
 
 class BingoBoard(Base):
     __tablename__ = "bingo_board" 
