@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
-from datetime import datetime
 from src.app.core.database import get_db
-from src.app.models.bingo import BingoBoard, BingoCell
+from src.app.api import deps
+from src.app.models.user import User
+from src.app.models.bingo import BingoBoard, BingoCell, BoardStatus
 from src.app.models.mission import Mission
-from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse,ActiveBingoResponse
+from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse,ActiveBingoResponse,BingoCheckResponse
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
-from src.app.core.database import get_db # DB 세션 주입 함수
+from datetime import datetime, date, time
+
 router = APIRouter()
 
 
@@ -140,3 +142,41 @@ def get_active_bingo(
         "completed_count": active_board.completed_count,
         "cells": active_board.cells 
     }
+@router.get("/active/check", response_model=BingoCheckResponse)
+def check_active_bingo(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """오늘 생성된 '진행 중'인 빙고판이 있는지 확인"""
+    today_start = datetime.combine(date.today(), time.min)
+    today_end = datetime.combine(date.today(), time.max)
+
+    active_board = db.query(BingoBoard).filter(
+        BingoBoard.user_id == current_user.id,
+        BingoBoard.status == BoardStatus.IN_PROGRESS,
+        BingoBoard.created_at >= today_start,
+        BingoBoard.created_at <= today_end
+    ).first()
+
+    return {
+        "exists": active_board is not None,
+        "board_id": active_board.id if active_board else None
+    }
+
+@router.post("/reset")
+def reset_bingo_board(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """기존 판 보관 후 새 판 생성"""
+    # 1. 기존에 진행 중이던 모든 판을 ARCHIVED로 변경
+    db.query(BingoBoard).filter(
+        BingoBoard.user_id == current_user.id,
+        BingoBoard.status == BoardStatus.IN_PROGRESS
+    ).update({"status": BoardStatus.ARCHIVED})
+    
+    # 2. 새로운 빙고판 생성 (기존에 만드신 생성 함수를 여기서 호출하세요)
+    # new_board = create_new_bingo_logic(db, current_user.id)
+    
+    db.commit()
+    return {"message": "Success", "detail": "Active board archived and new board created"}

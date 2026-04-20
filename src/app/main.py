@@ -30,6 +30,7 @@ app.include_router(social.router, prefix="/api/social", tags=["Social"])
 app.include_router(bingo.router, prefix="/api/bingo", tags=["Bingo"])
 app.include_router(bingo_detail.router, prefix="/api/history", tags=["Bingo Details"])
 app.include_router(admin.router, prefix="/api/admin/point", tags=["Admin"])
+app.include_router(bingo.router, prefix="/api/bingo", tags=["Bingo Management"])
 
 
 @app.get("/")
