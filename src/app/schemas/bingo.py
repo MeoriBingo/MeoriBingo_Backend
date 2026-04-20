@@ -38,3 +38,7 @@ class ActiveBingoResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class BingoCheckResponse(BaseModel):
+    exists: bool
+    board_id: Optional[int] = None
