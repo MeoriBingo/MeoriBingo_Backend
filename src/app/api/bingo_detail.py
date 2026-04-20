@@ -34,6 +34,7 @@ def get_bingo_history_by_date(
             BingoBoard.user_id == current_user.id,
             BingoBoard.created_at >= start_dt,
             BingoBoard.created_at <= end_dt,
+            BingoBoard.status == "IN_PROGRESS",
         )
         .all()
     )
