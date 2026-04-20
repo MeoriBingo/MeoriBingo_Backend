@@ -12,6 +12,7 @@ load_dotenv()
 
 app = FastAPI()
 
+
 # CORS 설정 추가
 app.add_middleware(
     CORSMiddleware,
