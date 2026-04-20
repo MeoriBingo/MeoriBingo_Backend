@@ -96,6 +96,8 @@ async def picture_upload(
         ).count()
         board.completed_count = current_done_count
 
+        board.completed_lines = count_completed_lines(board.cells)
+
         # 3. 포인트 판정 (중복 지급 방지)
         # [첫 미션 달성]
         if board.first_mission_cleared_at is None:
@@ -156,7 +158,6 @@ async def get_missions(db: Session = Depends(get_db)):
 
 
 # 미션 가이드 조회 서비스(by.서현)
-
 
 @router.get("/{mission_id}/guide", response_model=MissionGuideRead)
 def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):

@@ -26,12 +26,6 @@ async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
         "code": request.authorizationCode,
         "client_secret": settings.KAKAO_CLIENT_SECRET,
     }
-    print("\n" + "=" * 50)
-    print("🚀 카카오 토큰 요청 데이터 확인")
-    print(f"👉 CLIENT_ID (API KEY): {token_data['client_id']}")
-    print(f"👉 REDIRECT_URI: {token_data['redirect_uri']}")
-    print(f"👉 AUTH_CODE: {token_data['code'][:20]}...")  # 앞부분만 확인
-    print("=" * 50 + "\n")
 
     async with httpx.AsyncClient() as client:
         # 이 부분이 바로 POST인데 Body(data)를 실어 보내는 부분입니다!

@@ -11,6 +11,11 @@ class ReactionType(str, enum.Enum):
     SMILE = "SMILE"
     BAD = "BAD"
     CRY = "CRY"
+
+class FriendStatus(enum.Enum):
+    PENDING = "PENDING"   # 요청 대기
+    ACCEPTED = "ACCEPTED" # 친구 수락
+    REJECTED = "REJECTED" # 요청 거절
     
 class Friendship(Base):
     __tablename__ = "friendship"
@@ -18,7 +23,7 @@ class Friendship(Base):
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     requester_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     addressee_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
-    status = Column(String(255), nullable=False)  # PENDING, ACCEPTED
+    status = Column(SQLEnum(FriendStatus), default=FriendStatus.PENDING, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
 

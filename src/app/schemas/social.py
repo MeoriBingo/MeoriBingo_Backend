@@ -31,17 +31,24 @@ class FriendshipUpdate(BaseModel):
     user_id: int  
     status: str  # ACCEPTED 또는 REJECTED
 
-class FriendRequestRead(BaseModel):
-    id: int
-    requester_id: int
-    requester_nickname: Optional[str] = None
+class FriendRequestResponse(BaseModel):
+    friendship_id: int
+    user_id: int        # 상대방 ID
+    nickname: str       # 상대방 닉네임
+    profile_image_url: Optional[str] = None
     status: str
-    created_at: datetime
 
     class Config:
         from_attributes = True
 
-        
+class UserRead(BaseModel):
+    id: int
+    nickname: str
+    profile_image_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 
 # --- 빙고 현황/리스트 관련 ---
 
