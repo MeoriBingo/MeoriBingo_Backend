@@ -320,7 +320,7 @@ def get_friend_list(
             {
                 "user_id": friend.id,
                 "nickname": friend.nickname,
-                "profile_image": friend.profile_image,
+                "profile_image": friend.profile_image_url,
                 "bingo_count": bingo.completed_lines if bingo else 0,
                 "progress_percentage": (bingo.marked_cells / 25 * 100) if bingo else 0,
                 "last_updated": bingo.updated_at if bingo else friend.created_at,

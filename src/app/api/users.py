@@ -14,6 +14,7 @@ from src.app.schemas.users import (
     UserUpdate,
     UserMissionUpdate,
     UserStatsResponse,
+    UserRoleResponse,
 )
 
 router = APIRouter()
@@ -153,4 +154,16 @@ def get_user_stats(
             "weekly_stats": weekly_stats,
             "category_stats": category_stats,
         },
+    }
+
+@router.get("/me/role", response_model=UserRoleResponse)
+def get_my_role(
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    현재 로그인한 유저의 권한(ADMIN/USER) 정보를 반환합니다.
+    """
+    return {
+        "user_id": current_user.id,
+        "role": current_user.role
     }

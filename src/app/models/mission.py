@@ -1,6 +1,6 @@
 from sqlalchemy import Column, BigInteger, String, Text, Integer, SmallInteger
 from src.app.core.database import Base
-
+from pydantic import BaseModel
 
 class Mission(Base):
     __tablename__ = "missions"
@@ -12,3 +12,10 @@ class Mission(Base):
     # difficulty = Column(SmallInteger, nullable=False)
     # target_object = Column(String(255), nullable=True)
     is_active = Column(SmallInteger, default=1, nullable=False)
+
+class MissionVerifyResponse(BaseModel):
+    message: str
+    image_url: str
+    is_success: bool
+    class Config:
+        from_attributes = True
