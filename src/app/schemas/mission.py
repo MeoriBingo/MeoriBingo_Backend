@@ -13,8 +13,6 @@ class MissionResponse(BaseModel):
     title: str
     description: Optional[str] = None
     category: str
-    difficulty: int
-    target_object: Optional[str] = None
     is_active: int
 
     class Config:
