@@ -164,20 +164,20 @@ async def picture_upload(
             os.remove(temp_file_path)
 
 
-@router.get("/missions", response_model=List[MissionResponse])  # 스키마 적용
-async def get_missions(db: Session = Depends(get_db)):
-    """
-    DB에서 미션 목록을 전체 조회하여 반환합니다.
-    """
-    try:
-        missions = db.query(Mission).all()
-        return missions
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500, detail=f"Failed to upload to Azure or update DB: {str(e)}"
-        )
-
+@router.get("/missions", response_model=List[MissionResponse])
+async def get_missions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user) # 유저 정보 추가
+):
+    # 이 유저가 참여 중인 빙고판에 연결된 미션들만 가져오기
+    missions = (
+        db.query(Mission)
+        .join(BingoCell, Mission.id == BingoCell.mission_id)
+        .join(BingoBoard, BingoCell.board_id == BingoBoard.id)
+        .filter(BingoBoard.user_id == current_user.id)
+        .all()
+    )
+    return missions
 
 # 미션 가이드 조회 서비스(by.서현)
 
