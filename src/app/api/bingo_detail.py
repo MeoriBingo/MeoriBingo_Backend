@@ -9,7 +9,6 @@ from datetime import date, datetime, timedelta
 from typing import List
 from src.app.schemas.bingo_detail import BingoBoardHistory
 
-# ... router 설정 ...
 
 router = APIRouter()
 
