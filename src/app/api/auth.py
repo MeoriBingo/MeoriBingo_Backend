@@ -28,7 +28,6 @@ async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
     }
 
     async with httpx.AsyncClient() as client:
-        # 이 부분이 바로 POST인데 Body(data)를 실어 보내는 부분입니다!
         token_resp = await client.post(token_url, data=token_data)
 
         if token_resp.status_code != 200:
