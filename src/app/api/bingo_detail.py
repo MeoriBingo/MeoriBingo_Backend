@@ -2,13 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from src.app.core.database import get_db
-from src.app.models.bingo import BingoBoard
+from src.app.models.bingo import BingoBoard, BoardStatus
 from src.app.models.user import User
 from src.app.api import deps
 from datetime import date, datetime, timedelta
 from typing import List
 from src.app.schemas.bingo_detail import BingoBoardHistory
-
 
 router = APIRouter()
 
@@ -22,6 +21,10 @@ def get_bingo_history_by_date(
     """
     특정 날짜에 생성된 나의 빙고 기록(상세 상태 및 달성 시간 포함)을 조회합니다.
     """
+
+    print(f"DEBUG: 현재 로그인 유저 ID: {current_user.id}")
+    print(f"DEBUG: 조회 날짜 범위: {target_date}")
+
     # 해당 날짜의 시작과 끝 범위 설정 (00:00:00 ~ 23:59:59)
     start_dt = datetime.combine(target_date, datetime.min.time())
     end_dt = datetime.combine(target_date, datetime.max.time())
@@ -33,7 +36,7 @@ def get_bingo_history_by_date(
             BingoBoard.user_id == current_user.id,
             BingoBoard.created_at >= start_dt,
             BingoBoard.created_at <= end_dt,
-            # BingoBoard.status == "IN_PROGRESS",
+            BingoBoard.status.in_([BoardStatus.IN_PROGRESS, BoardStatus.COMPLETED]),
         )
         .all()
     )
