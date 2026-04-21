@@ -1,22 +1,34 @@
-from sqlalchemy import Column, BigInteger, String, Integer, DateTime, ForeignKey, func, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    BigInteger,
+    String,
+    Integer,
+    DateTime,
+    ForeignKey,
+    func,
+    Enum as SQLEnum,
+)
 from src.app.core.database import Base
 from datetime import datetime
 from sqlalchemy.sql import func
 import enum
 
+
 class ReactionType(str, enum.Enum):
     HEART = "HEART"
     FIRE = "FIRE"
-    LIKE = "LIKE"   
+    LIKE = "LIKE"
     SMILE = "SMILE"
     BAD = "BAD"
     CRY = "CRY"
 
-class FriendStatus(enum.Enum):
-    PENDING = "PENDING"   # 요청 대기
-    ACCEPTED = "ACCEPTED" # 친구 수락
-    REJECTED = "REJECTED" # 요청 거절
-    
+
+class FriendStatus(str, enum.Enum):
+    PENDING = "PENDING"  # 요청 대기
+    ACCEPTED = "ACCEPTED"  # 친구 수락
+    REJECTED = "REJECTED"  # 요청 거절
+
+
 class Friendship(Base):
     __tablename__ = "friendship"
 
