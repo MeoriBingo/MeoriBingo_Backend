@@ -118,7 +118,6 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
             "message": "Bingo cell updated successfully",
             "cell_id": cell.id,
             "status": cell.status,
-            "category": cell.mission.category,
             "is_completed": cell.is_completed,
             "completed_at": cell.completed_at,
         }
