@@ -90,7 +90,7 @@ async def picture_upload(
         cell.proof_image_url = image_url
         cell.is_completed = True
         cell.completed_at = now
-        cell.status = CellStatus.DONE
+        cell.status = CellStatus.COMPLETED
 
         # 보드 상태 갱신
         board.completed_count = db.query(BingoCell).filter(
