@@ -5,6 +5,7 @@ from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 from azure.storage.blob import BlobServiceClient
+from datetime import datetime, timedelta
 
 # 모델 및 스키마 임포트
 from src.app.core.database import get_db
@@ -113,6 +114,29 @@ async def picture_upload(
         # (기존의 2줄, 3줄 포인트 로직 동일하게 적용 가능)
 
         current_user.point += earned_points
+
+        # 5-1. 스트릭(연속 달성) 로직
+        today = now.date()  # 오늘 날짜 (YYYY-MM-DD)
+        
+        if current_user.last_completed_date:
+            # DB에 저장된 날짜 (이미 Date 객체임)
+            last_date = current_user.last_completed_date
+            
+            if last_date == today:
+                # 오늘 이미 미션을 수행했다면 스트릭 유지
+                pass
+            elif last_date == today - timedelta(days=1):
+                # 어제 완료하고 오늘 처음 하는 거라면 스트릭 +1
+                current_user.streak_count += 1
+            else:
+                # 어제 건너뛰었다면 스트릭 다시 1일부터 시작
+                current_user.streak_count = 1
+        else:
+            # 아예 생애 첫 미션 완료라면 1일
+            current_user.streak_count = 1
+        
+        # 마지막 완료 날짜를 오늘로 갱신 (Date 타입이므로 today 저장)
+        current_user.last_completed_date = today
 
         # 6. AI 축하 문구 생성 (BingoAIService 활용)
         # 빙고가 완성되었으면 lines를 전달하여 더 큰 축하를 보냅니다.
