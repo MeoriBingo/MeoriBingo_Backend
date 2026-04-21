@@ -22,7 +22,7 @@ class CellStatus(enum.Enum):
     NONE = "NONE"
     IN_PROGRESS = "IN_PROGRESS" 
     PENDING = "PENDING"
-    DONE = "DONE"
+    COMPLETED = "COMPLETED"
 
 class BingoBoard(Base):
     __tablename__ = "bingo_board" 
