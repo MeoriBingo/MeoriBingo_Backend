@@ -10,9 +10,11 @@ from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse,Activ
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, date, time
+from src.app.service.BingoAIService import BingoAIService
+
 
 router = APIRouter()
-
+ai_service = BingoAIService()
 
 @router.post("/generate", response_model=BingoBoardResponse)
 async def generate_bingo_board(
@@ -35,31 +37,40 @@ async def generate_bingo_board(
         db.add(new_board)
         db.flush()  # board.id를 얻기 위해 flush 실행
 
-        # 랜덤 미션 9개 선택
-        random_missions = (
-            db.query(Mission)
-            .filter(Mission.is_active == 1)
-            .order_by(func.rand())
-            .limit(9)
-            .all()
+        mode_param = request.mode.lower() if hasattr(request, 'mode') else "normal"
+        category_param = request.category if hasattr(request, 'category') else "생산성"
+
+        ai_missions = ai_service.generate_bingo_missions(
+            mode=mode_param, 
+            selected_category=category_param
         )
 
-        if len(random_missions) < 9:
+        if not ai_missions or len(ai_missions) < 9:
             raise HTTPException(
-                status_code=400,
-                detail="빙고판을 만들기 위한 활성화 된 미션 9개 조회 실패",
+                status_code=500,
+                detail="AI가 미션을 생성하지 못했습니다. 서비스 상태를 확인하세요.",
             )
 
         # 빙고 셀 생성
         bingo_cells = []
-        for i, mission in enumerate(random_missions):
+        for i, mission in enumerate(ai_missions):
+
+            new_mission = Mission(
+                title=mission.get('title', '제목 없음'),
+                description=mission.get('description', ''),
+                category=mission.get('category', category_param),
+                is_active=1
+            )
+            db.add(new_mission)
+            db.flush()
+
             new_cell = BingoCell(
                 board_id=new_board.id,
-                mission_id=mission.id,
-                mission_title=mission.title,  
-                position=i + 1,  # 1부터 9까지
-                status="IN_PROGRESS",  # 사용자 요청에 따른 상태값
-                is_completed=0,  # 아직 완료되지 않음
+                mission_id=new_mission.id,
+                mission_title=new_mission.title,  
+                position=i + 1,  # 1~9
+                status="IN_PROGRESS",
+                is_completed=0,
             )
             db.add(new_cell)
             bingo_cells.append(new_cell)
