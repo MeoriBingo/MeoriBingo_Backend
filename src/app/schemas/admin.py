@@ -14,7 +14,7 @@ class PointHistoryRead(BaseModel):
     id: int
     amount: int
     reason: str
-    type: str  # SAVED (적립) / USED (사용)
+    point_type: str  # SAVED (적립) / USED (사용)
     created_at: datetime
 
     class Config:
