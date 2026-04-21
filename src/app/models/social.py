@@ -46,8 +46,8 @@ class PointLog(Base):
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     amount = Column(Integer, nullable=False)
     reason = Column(String(255), nullable=False)
+    point_type = Column(String(255), nullable=False) 
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
-
 
 class BingoReaction(Base):
     __tablename__ = "bingo_reactions"

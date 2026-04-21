@@ -25,7 +25,7 @@ async def grant_point_by_admin(
 
     # 2. 포인트 내역 저장
     new_history = PointLog(
-        user_id=user_id, amount=payload.amount, reason=payload.reason, type="SAVED"
+        user_id=user_id, amount=payload.amount, reason=payload.reason, point_type="SAVED"
     )
     db.add(new_history)
 
@@ -44,11 +44,7 @@ async def get_all_users(db: Session = Depends(get_db)):
     """
     role 값이 users인 전체 유저 목록을 조회합니다.
     """
-    users = (
-        db.query(User)
-        .filter(func.lower(User.role) == "USER")
-        .all()
-    )
+    users = db.query(User).filter(func.upper(User.role) == "USER").all()
     return users
 
 
@@ -67,8 +63,5 @@ async def get_user_point_history(user_id: int, db: Session = Depends(get_db)):
         .order_by(PointLog.created_at.desc())
         .all()
     )
-
-    # 임시 목차 데이터 (DB 모델 없을 때 테스트용)
-    history = []
 
     return {"status": "success", "total_point": user.point, "history": history}
