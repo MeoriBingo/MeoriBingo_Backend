@@ -30,7 +30,8 @@ async def generate_bingo_board(
         # 빙고판 생성
         new_board = BingoBoard(
             user_id=request.user_id,
-            mode="NORMAL",
+            mode=request.mode.upper(),
+            category=request.category,
             status="IN_PROGRESS",
             completed_count=0,
         )
