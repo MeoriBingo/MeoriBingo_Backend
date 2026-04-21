@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from src.app.models.user import User
@@ -36,6 +37,19 @@ async def grant_point_by_admin(
         "message": f"{user.nickname}님에게 {payload.amount}포인트가 부여되었습니다.",
         "current_point": user.point,
     }
+
+
+@router.get("/all")
+async def get_all_users(db: Session = Depends(get_db)):
+    """
+    role 값이 users인 전체 유저 목록을 조회합니다.
+    """
+    users = (
+        db.query(User)
+        .filter(func.lower(User.role) == "USER")
+        .all()
+    )
+    return users
 
 
 @router.get("/{user_id}", response_model=PointHistoryResponse)
