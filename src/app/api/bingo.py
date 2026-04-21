@@ -5,9 +5,11 @@ from datetime import datetime
 from src.app.core.database import get_db
 from src.app.models.bingo import BingoBoard, BingoCell
 from src.app.models.mission import Mission
-from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse
-
-router = APIRouter(prefix="/bingo", tags=["Bingo"])
+from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse,ActiveBingoResponse
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session, joinedload
+from src.app.core.database import get_db # DB 세션 주입 함수
+router = APIRouter()
 
 
 @router.post("/generate", response_model=BingoBoardResponse)
@@ -52,6 +54,7 @@ async def generate_bingo_board(
             new_cell = BingoCell(
                 board_id=new_board.id,
                 mission_id=mission.id,
+                mission_title=mission.title,  
                 position=i + 1,  # 1부터 9까지
                 status="IN_PROGRESS",  # 사용자 요청에 따른 상태값
                 is_completed=0,  # 아직 완료되지 않음
@@ -109,3 +112,31 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
         raise HTTPException(
             status_code=500, detail=f"Failed to update bingo cell: {str(e)}"
         )
+
+@router.get("/active", response_model=ActiveBingoResponse)
+def get_active_bingo(
+    user_id: int, # 실제로는 인증 미들웨어를 통해 가져와야 합니다.
+    db: Session = Depends(get_db)
+):
+    # 1. 사용자의 진행 중인 보드 조회 (셀 정보 포함)
+    active_board = (
+        db.query(BingoBoard)
+        .options(joinedload(BingoBoard.cells)) # 관계 설정이 되어 있다고 가정
+        .filter(
+            BingoBoard.user_id == user_id,
+            BingoBoard.status == "IN_PROGRESS"
+        )
+        .first()
+    )
+
+    if not active_board:
+        raise HTTPException(status_code=404, detail="진행 중인 빙고판이 없습니다.")
+
+    # 2. 데이터 반환 (Pydantic이 자동으로 매핑)
+    return {
+        "board_id": active_board.id,
+        "mode": active_board.mode,
+        "category": active_board.category,
+        "completed_count": active_board.completed_count,
+        "cells": active_board.cells 
+    }

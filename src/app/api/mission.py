@@ -15,7 +15,7 @@ from src.app.core.database import get_db
 from src.app.models.mission import Mission
 from src.app.models.bingo import BingoCell
 
-router = APIRouter(prefix="/mission", tags=["Mission"])
+router = APIRouter()
 
 # Azure Storage 설정
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -111,6 +111,6 @@ def get_mission_guide(mission_id: int, db: Session = Depends(get_db)):
     return MissionGuideRead(
         guideText=f"[{my_mission_data.title}] {my_mission_data.description}",
         # guideImage=저희 가이드 이미지도 하기로 했었나욥...?
-        tips=(f"{my_mission_data.target_object}를 촬영하여 업로드하세요!")
+        tips=(f"{my_mission_data.target_object}를 촬영하여 업로드하세요!"),
         ### tips에 'xxx'을 촬영하세요 일단 이런식으로 해두겠습니다
     )

@@ -27,3 +27,22 @@ class UserUpdate(BaseModel):
 class UserMissionUpdate(BaseModel):
     streak_count: Optional[int] = None
     last_completed_date: Optional[date] = None
+
+
+class WeeklyStat(BaseModel):
+    date: date
+    count: int
+
+
+class CategoryStat(BaseModel):
+    category: str
+    count: int
+    percentage: float
+
+
+class UserStatsResponse(BaseModel):
+    status: str
+    data: dict
+
+    class Config:
+        from_attributes = True
