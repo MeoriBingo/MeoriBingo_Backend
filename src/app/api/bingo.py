@@ -69,6 +69,7 @@ async def generate_bingo_board(
                 board_id=new_board.id,
                 mission_id=new_mission.id,
                 mission_title=new_mission.title,  
+                category=new_mission.category,
                 position=i + 1,  # 1~9
                 status="IN_PROGRESS",
                 is_completed=0,
@@ -117,6 +118,7 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
             "message": "Bingo cell updated successfully",
             "cell_id": cell.id,
             "status": cell.status,
+            "category": cell.mission.category,
             "is_completed": cell.is_completed,
             "completed_at": cell.completed_at,
         }

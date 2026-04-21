@@ -29,7 +29,6 @@ async def kakao_login(request: LoginRequest, db: Session = Depends(get_db)):
 
     async with httpx.AsyncClient() as client:
         token_resp = await client.post(token_url, data=token_data)
-
         if token_resp.status_code != 200:
             print(f"TOKEN ERROR: {token_resp.text}")
             raise HTTPException(

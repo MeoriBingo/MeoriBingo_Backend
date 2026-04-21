@@ -69,7 +69,12 @@ class BingoAIService:
         """
      
         # 2. 모드별 미션 구성 지시문 생성
-        if mode == "challenge":
+        if hasattr(mode, "value"):
+            current_mode = str(mode.value).lower()
+        else:
+            current_mode = str(mode).lower()
+
+        if "challenge" in current_mode:
             mission_composition = (
                 f"1. '{selected_category}' 카테고리에서 3개의 미션을 생성하세요.\n"
                 f"2. 나머지 카테고리({', '.join(other_categories)}) 중에서 랜덤하게 총 6개의 미션을 생성하세요."

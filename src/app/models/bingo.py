@@ -60,6 +60,7 @@ class BingoCell(Base):
     
     # 미션 정보 
     mission_title = Column(String(255), nullable=False)
+    category = Column(String(50), nullable=False)
     position = Column(SmallInteger, nullable=False)  # 0~8 또는 1~9 
     
     # 상태 및 인증
