@@ -18,9 +18,9 @@ def get_current_user(
     현재 로그인한 유저를 가져오는 의존성 함수
     """
     # # ================= [ 테스트 모드 ] =================
-    # test_user = db.query(User).filter(User.id == 6).first()
-    # if test_user:
-    #     return test_user
+    test_user = db.query(User).filter(User.id == 6).first()
+    if test_user:
+        return test_user
     # # =================================================
 
     # [ 정석 인증 로직 ] -> 테스트 중에는 위에서 return되므로 실행되지 않음
