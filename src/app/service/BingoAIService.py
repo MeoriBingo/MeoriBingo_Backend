@@ -153,7 +153,7 @@ class BingoAIService:
                         "role": "system",
                         "content": (
                             f"당신은 '{m_category}' 카테고리 미션의 전문 판독관입니다. "
-                            f"제시된 사진 속에 '{m_desc}' 미션에 해당하는 명확한 피사체가 있는지 확인하세요."
+                            f"제시된 사진 속에 '{m_title}' 미션에 해당하는 명확한 피사체가 있는지 확인하세요."
                         )
                     },
                     {
