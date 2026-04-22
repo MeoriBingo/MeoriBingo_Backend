@@ -18,7 +18,7 @@ def get_current_user(
     현재 로그인한 유저를 가져오는 의존성 함수
     """
     # # ================= [ 테스트 모드 ] =================
-    # test_user = db.query(User).filter(User.id == 6).first()
+    # test_user = db.query(User).filter(User.id == 5).first()
     # if test_user:
     #     return test_user
     # # =================================================
