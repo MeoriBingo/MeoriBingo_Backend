@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, contains_eager
 from sqlalchemy import func
 from src.app.core.database import get_db
-from src.app.models.bingo import BingoBoard, BoardStatus
+from src.app.models.bingo import BingoBoard, BoardStatus, BingoCell
 from src.app.models.user import User
 from src.app.api import deps
 from datetime import date, datetime, timedelta
 from typing import List
-from src.app.schemas.bingo_detail import BingoBoardHistory
+from src.app.schemas.bingo_detail import BingoBoardHistory, BingoCellDetail
 
 router = APIRouter()
 
@@ -42,20 +42,21 @@ def get_bingo_history_by_date(
     )
 
     if not histories:
-        return (
-            []
-        )  # 혹은 404를 내뱉을 수 있지만, 기록이 없는 날은 빈 리스트가 자연스럽습니다.
+        return []
 
     return histories
 
 
-@router.get("/history/monthly", response_model=List[BingoBoardHistory])
+@router.get("/history/monthly", response_model=List[BingoCellDetail])
 def get_monthly_bingo_summary(
     year: int = Query(..., ge=2024),
     month: int = Query(..., ge=1, le=12),
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ):
+    """
+    해당 월의 빙고 미션 중 완료된 것들(cells)만 조회합니다.
+    """
     # 해당 월의 시작일과 다음 달 시작일 계산
     start_date = datetime(year, month, 1)
     if month == 12:
@@ -63,13 +64,16 @@ def get_monthly_bingo_summary(
     else:
         end_date = datetime(year, month + 1, 1)
 
-    histories = (
-        db.query(BingoBoard)
+    # 해당 월에 생성된 빙고판의 셀들 중 완료된 것만 조회
+    completed_cells = (
+        db.query(BingoCell)
+        .join(BingoBoard)
         .filter(
             BingoBoard.user_id == current_user.id,
             BingoBoard.created_at >= start_date,
-            BingoBoard.created_at < end_date, # 다음 달 1일 미만까지
+            BingoBoard.created_at < end_date,
+            BingoCell.is_completed == True,
         )
         .all()
     )
-    return histories
+    return completed_cells
