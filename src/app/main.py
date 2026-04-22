@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from src.app.api import auth, users, mission, bingo, admin, bingo_detail, friends # friends를 여기로 통합
+from src.app.api import auth, users, mission, bingo, admin, bingo_detail, friends, reactions 
 from src.app.core.database import engine
 
 load_dotenv()
@@ -26,11 +26,12 @@ app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(mission.router, prefix="/api/mission", tags=["Mission"])
 
 # 소셜(친구/리액션) 라우터: prefix를 /api/social로 설정
-app.include_router(friends.router, prefix="/api/social", tags=["Social"])
+app.include_router(friends.router, prefix="/api/social", tags=["Friends"])
+app.include_router(reactions.router, prefix="/api/social/reactions", tags=["Reactions"])
 
 app.include_router(bingo.router, prefix="/api/bingo", tags=["Bingo"])
 app.include_router(bingo_detail.router, prefix="/api/history", tags=["Bingo Details"])
-app.include_router(admin.router, prefix="/api/admin/point", tags=["Admin"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 
 @app.get("/")
