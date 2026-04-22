@@ -180,15 +180,15 @@ def get_friend_list(db: Session = Depends(get_db), current_user: User = Depends(
 
 
 @router.delete("/friends/{friend_id}", response_model=FriendDeleteResponse)
-def delete_friend(friend_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_friend(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     친구 삭제
     """
     friendship = db.query(Friendship).filter(
         and_(
             or_(
-                and_(Friendship.requester_id == current_user.id, Friendship.addressee_id == friend_id),
-                and_(Friendship.requester_id == friend_id, Friendship.addressee_id == current_user.id)
+                and_(Friendship.requester_id == current_user.id, Friendship.addressee_id == user_id),
+                and_(Friendship.requester_id == user_id, Friendship.addressee_id == current_user.id)
             ),
             Friendship.status == "ACCEPTED"
         )

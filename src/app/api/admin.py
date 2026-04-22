@@ -9,7 +9,7 @@ from src.app.schemas.admin import PointGrantRequest, PointHistoryResponse
 router = APIRouter()
 
 
-@router.post("/{user_id}")
+@router.post("/point/{user_id}")
 async def grant_point_by_admin(
     user_id: int, payload: PointGrantRequest, db: Session = Depends(get_db)
 ):
@@ -39,7 +39,7 @@ async def grant_point_by_admin(
     }
 
 
-@router.get("/all")
+@router.get("/user/all")
 async def get_all_users(db: Session = Depends(get_db)):
     """
     role 값이 users인 전체 유저 목록을 조회합니다.
@@ -48,7 +48,7 @@ async def get_all_users(db: Session = Depends(get_db)):
     return users
 
 
-@router.get("/{user_id}", response_model=PointHistoryResponse)
+@router.get("/point/{user_id}", response_model=PointHistoryResponse)
 async def get_user_point_history(user_id: int, db: Session = Depends(get_db)):
     """
     유저의 포인트 적립 및 사용 내역을 조회합니다.
