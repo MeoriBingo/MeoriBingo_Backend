@@ -199,7 +199,7 @@ def delete_friend(user_id: int, db: Session = Depends(get_db), current_user: Use
 
     db.delete(friendship)
     db.commit()
-    return {"status": "success", "message": "삭제 완료", "data": {"deleted_id": friend_id}}
+    return {"status": "success", "message": "삭제 완료", "data": {"deleted_id": user_id}}
 
 
 @router.get("/friends/search", response_model=List[UserRead])
