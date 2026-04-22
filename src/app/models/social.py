@@ -54,6 +54,7 @@ class BingoReaction(Base):
 
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    nickname = Column(String(50), nullable=False)
     bingo_board_id = Column(BigInteger, ForeignKey("bingo_board.id"), nullable=False)
     reaction_type = Column(SQLEnum(ReactionType), nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

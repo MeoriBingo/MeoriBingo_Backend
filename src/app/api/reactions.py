@@ -94,6 +94,7 @@ async def create_bingo_reaction(
     # 4. 반응 저장
     new_reaction = BingoReaction(
         user_id=current_user.id,
+        nickname=current_user.nickname,
         bingo_board_id=reaction_in.bingo_board_id,
         reaction_type=reaction_in.reaction_type,
     )
@@ -101,7 +102,33 @@ async def create_bingo_reaction(
     db.commit()
     db.refresh(new_reaction)
 
-    return new_reaction
+    return {
+        "id": new_reaction.id,
+        "user_id": current_user.id,
+        "nickname": current_user.nickname,  
+        "reaction_type": new_reaction.reaction_type,
+        "created_at": new_reaction.created_at
+    }
+
+@router.get("/boards/{board_id}/reactions", response_model=list[ReactionRead])
+async def get_board_reactions(
+    board_id: int, 
+    db: Session = Depends(get_db)
+):
+    """
+    특정 빙고 보드에 달린 반응 리스트와 남긴 사람의 닉네임을 함께 반환합니다.
+    """
+    results = db.query(
+        BingoReaction.id,
+        BingoReaction.user_id,
+        User.nickname, 
+        BingoReaction.reaction_type,
+        BingoReaction.created_at
+    ).join(User, BingoReaction.user_id == User.id)\
+     .filter(BingoReaction.bingo_board_id == board_id)\
+     .all()
+
+    return results
 
 # 친구 빙고판에 남긴 반응 취소하기 
 @router.delete("/friends/bingo/react/{bingo_board_id}")
