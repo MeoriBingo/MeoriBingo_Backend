@@ -70,13 +70,13 @@ class FriendListResponse(BaseModel):
 
 
 class ReactionCreate(BaseModel):
-    user_id: int
     bingo_board_id: int
     reaction_type: ReactionType 
 
 class ReactionRead(BaseModel):
     id: int
     user_id: int
+    nickname: str  
     reaction_type: ReactionType 
     created_at: datetime
 
