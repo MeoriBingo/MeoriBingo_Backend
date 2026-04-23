@@ -7,6 +7,7 @@ from typing import List, Dict
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 from sqlalchemy import Column, BigInteger, String, Text, SmallInteger, DateTime, func
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from src.app.models.mission import Mission
@@ -187,8 +188,11 @@ class BingoAIService:
 
     # 3. 빙고 문구 생성 (self 추가 및 들여쓰기 수정)
     def request_openai(self, mission_obj, lines=0, streak=1, weather="맑음", completed_at=None, histories=[]):
+        kst = timezone(timedelta(hours=9))
         if completed_at is None:
-            completed_at = datetime.now()
+            completed_at = datetime.now(kst)
+        elif completed_at.tzinfo is None:
+            completed_at = completed_at.replace(tzinfo=kst)
         current_date = completed_at.strftime("%Y-%m-%d")
         current_time = completed_at.strftime("%H:%M")
         weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
