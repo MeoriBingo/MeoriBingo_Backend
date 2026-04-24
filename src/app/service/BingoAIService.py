@@ -128,7 +128,15 @@ class BingoAIService:
         DB에서 미션 정보를 가져와 Azure OpenAI(GPT-4o)로 사진을 판독합니다.
         """
         target_mission = db.query(Mission).filter(Mission.id == mission_id).first()
-        
+        kst = timezone(timedelta(hours=9))
+        now = datetime.now(kst)
+        current_time = now.strftime("%H:%M")
+        weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+        current_weekday = weekdays[now.weekday()]
+
+        if completed_at is None:
+            completed_at = datetime.now(kst)
+
         if not target_mission:
             return "MISSION_NOT_FOUND"
             
@@ -154,6 +162,7 @@ class BingoAIService:
                         "role": "system",
                         "content": (
                             f"당신은 '{m_category}' 카테고리 미션의 전문 판독관입니다. "
+                            f"지역: 대한민국(KST), 현재 시간: {current_time}({current_weekday}).\n"
                             f"제시된 사진 속에 '{m_title}' 미션에 해당하는 명확한 피사체가 있는지 확인하세요."
                         )
                     },
