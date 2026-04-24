@@ -161,7 +161,10 @@ def get_friend_list(db: Session = Depends(get_db), current_user: User = Depends(
     friends = db.query(User).filter(User.id.in_(friend_ids)).all()
     
     # N+1 문제 방지를 위해 최신 빙고판 한 번에 조회
-    latest_bingos = db.query(BingoBoard).filter(BingoBoard.user_id.in_(friend_ids)).all()
+    latest_bingos = db.query(BingoBoard).filter(
+    BingoBoard.user_id.in_(friend_ids),
+    BingoBoard.status == "IN_PROGRESS" 
+    ).all()
     bingo_map = {b.user_id: b for b in latest_bingos}
 
     results = []
