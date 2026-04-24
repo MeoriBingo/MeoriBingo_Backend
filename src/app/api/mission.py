@@ -127,7 +127,10 @@ async def picture_upload(
                 pass
             elif last_date == today - timedelta(days=1):
                 # 어제 완료하고 오늘 처음 하는 거라면 스트릭 +1
-                current_user.streak_count += 1
+                if current_user.streak_count is None:
+                    current_user.streak_count = 1
+                else:
+                    current_user.streak_count += 1
             else:
                 # 어제 건너뛰었다면 스트릭 다시 1일부터 시작
                 current_user.streak_count = 1
@@ -138,6 +141,10 @@ async def picture_upload(
         # 마지막 완료 날짜를 오늘로 갱신 (Date 타입이므로 today 저장)
         current_user.last_completed_date = today
 
+        db.commit()
+        db.refresh(cell)
+        db.refresh(current_user)
+
         # 6. AI 축하 문구 생성 (BingoAIService 활용)
         # 빙고가 완성되었으면 lines를 전달하여 더 큰 축하를 보냅니다.
         ai_congrats_message = ai_service.request_openai(
@@ -145,9 +152,6 @@ async def picture_upload(
             lines=new_lines, 
             completed_at=now
         )
-
-        db.commit()
-        db.refresh(cell)
 
         return MissionVerifyResponse(
             message=ai_congrats_message, # AI가 생성한 맞춤형 문구
