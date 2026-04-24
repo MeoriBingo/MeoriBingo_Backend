@@ -47,7 +47,7 @@ class BingoBoard(Base):
     
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
-    # 관계 설정 (back_populates가 더 명시적이라 추천합니다)
+    # 관계 설정
     cells = relationship("BingoCell", back_populates="board", order_by="BingoCell.position", cascade="all, delete-orphan")
 
 
