@@ -22,7 +22,7 @@ ai_service = BingoAIService()
 @router.post("/generate", response_model=BingoBoardResponse)
 async def generate_bingo_board(
     request: BingoGenerateRequest, db: Session = Depends(get_db),
-    current_user_id: int = Depends(deps.get_current_user_id)
+     current_user: User = Depends(deps.get_current_user)
 ):
     """
     새로운 빙고판을 생성합니다.
@@ -34,13 +34,13 @@ async def generate_bingo_board(
         # 빙고판 생성
         # 1. 이미 진행 중인 판이 있다면 ARCHIVED로 변경
         db.query(BingoBoard).filter(
-            BingoBoard.user_id == current_user_id,
+            BingoBoard.user_id == current_user.id,
             BingoBoard.status == "IN_PROGRESS"
         ).update({"status": "ARCHIVED"})
 
         # 2. 빙고판 생성
         new_board = BingoBoard(
-            user_id=current_user_id, 
+            user_id=current_user.id, 
             mode=request.mode.upper(),
             category=request.category,
             status="IN_PROGRESS",
@@ -178,8 +178,8 @@ def check_active_bingo(
 ):
     KST = timezone(timedelta(hours=9))
     today_kst = datetime.now(KST).date()
-    today_start = datetime.combine(today_kst, time.min)
-    today_end = datetime.combine(today_kst, time.max)
+    today_start = datetime.combine(today_kst, time.min).replace(tzinfo=KST)
+    today_end = datetime.combine(today_kst, time.max).replace(tzinfo=KST)
 
     active_board = db.query(BingoBoard).filter(
         BingoBoard.user_id == current_user.id,  # 인증된 유저 id 사용
