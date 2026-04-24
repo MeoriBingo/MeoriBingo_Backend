@@ -23,11 +23,9 @@ class Mission(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     category = Column(String(255), nullable=False)
-    difficulty = Column(SmallInteger, nullable=False, default=1)
+    # difficulty = Column(SmallInteger, nullable=False)
+    # target_object = Column(String(255), nullable=True)
     is_active = Column(SmallInteger, default=1, nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
-    completed_at = Column(DateTime, nullable=True)
 
 
 class BingoAIService:
