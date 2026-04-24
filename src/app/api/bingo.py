@@ -18,7 +18,8 @@ ai_service = BingoAIService()
 
 @router.post("/generate", response_model=BingoBoardResponse)
 async def generate_bingo_board(
-    request: BingoGenerateRequest, db: Session = Depends(get_db)
+    request: BingoGenerateRequest, db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
     새로운 빙고판을 생성합니다.
@@ -28,15 +29,22 @@ async def generate_bingo_board(
     """
     try:
         # 빙고판 생성
+        # 1. 이미 진행 중인 판이 있다면 ARCHIVED로 변경
+        db.query(BingoBoard).filter(
+            BingoBoard.user_id == current_user.id,
+            BingoBoard.status == "IN_PROGRESS"
+        ).update({"status": "ARCHIVED"})
+
+        # 2. 빙고판 생성
         new_board = BingoBoard(
-            user_id=request.user_id,
+            user_id=current_user.id, 
             mode=request.mode.upper(),
             category=request.category,
             status="IN_PROGRESS",
             completed_count=0,
         )
         db.add(new_board)
-        db.flush()  # board.id를 얻기 위해 flush 실행
+        db.flush()
 
         mode_param = request.mode.lower() if hasattr(request, 'mode') else "normal"
         category_param = request.category if hasattr(request, 'category') else "생산성"
@@ -131,16 +139,18 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
 @router.get("/active", response_model=ActiveBingoResponse)
 def get_active_bingo(
     user_id: int, # 실제로는 인증 미들웨어를 통해 가져와야 합니다.
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
     # 1. 사용자의 진행 중인 보드 조회 (셀 정보 포함)
     active_board = (
         db.query(BingoBoard)
         .options(joinedload(BingoBoard.cells)) # 관계 설정이 되어 있다고 가정
         .filter(
-            BingoBoard.user_id == user_id,
+            BingoBoard.user_id == current_user.id,
             BingoBoard.status == "IN_PROGRESS"
         )
+        .order_by(BingoBoard.created_at.desc())
         .first()
     )
 
