@@ -6,6 +6,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 from azure.storage.blob import BlobServiceClient
 from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # 모델 및 스키마 임포트
 from src.app.core.database import get_db
@@ -42,6 +43,12 @@ async def picture_upload(
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user)
 ):
+    
+    # 1. 한국 표준시(KST) 설정
+    KST = timezone(timedelta(hours=9))
+    now = datetime.now(KST) 
+    today = now.date()
+
     if not AZURE_STORAGE_CONNECTION_STRING:
         raise HTTPException(status_code=500, detail="Azure Storage 설정이 없습니다.")
 
@@ -85,7 +92,6 @@ async def picture_upload(
         image_url = blob_client.url
 
         # 5. 데이터 업데이트 및 포인트 지급 로직
-        now = datetime.now()
         earned_points = 0
         
         cell.proof_image_url = image_url
