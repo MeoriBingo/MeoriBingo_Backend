@@ -153,10 +153,13 @@ async def picture_upload(
 
         # 6. AI 축하 문구 생성 (BingoAIService 활용)
         # 빙고가 완성되었으면 lines를 전달하여 더 큰 축하를 보냅니다.
+
+        formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
+
         ai_congrats_message = ai_service.request_openai(
             mission_obj=cell.mission, 
             lines=new_lines, 
-            completed_at=now
+            completed_at=formatted_time
         )
 
         return MissionVerifyResponse(
