@@ -1,15 +1,18 @@
+# 1. 파이썬 표준 라이브러리
+from datetime import datetime, date, time, timedelta, timezone
+
+# 2. 서드파티 라이브러리 (FastAPI, SQLAlchemy)
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql import func
+
+# 3. 내부(Local) 모듈 및 서비스
 from src.app.core.database import get_db
 from src.app.api import deps
 from src.app.models.user import User
 from src.app.models.bingo import BingoBoard, BingoCell, BoardStatus
 from src.app.models.mission import Mission
-from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse,ActiveBingoResponse,BingoCheckResponse
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, joinedload
-from datetime import datetime, date, time
+from src.app.schemas.bingo import BingoGenerateRequest, BingoBoardResponse, ActiveBingoResponse, BingoCheckResponse
 from src.app.service.BingoAIService import BingoAIService
 
 
@@ -19,7 +22,7 @@ ai_service = BingoAIService()
 @router.post("/generate", response_model=BingoBoardResponse)
 async def generate_bingo_board(
     request: BingoGenerateRequest, db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_user)
+    current_user_id: int = Depends(deps.get_current_user_id)
 ):
     """
     새로운 빙고판을 생성합니다.
@@ -31,13 +34,13 @@ async def generate_bingo_board(
         # 빙고판 생성
         # 1. 이미 진행 중인 판이 있다면 ARCHIVED로 변경
         db.query(BingoBoard).filter(
-            BingoBoard.user_id == current_user.id,
+            BingoBoard.user_id == current_user_id,
             BingoBoard.status == "IN_PROGRESS"
         ).update({"status": "ARCHIVED"})
 
         # 2. 빙고판 생성
         new_board = BingoBoard(
-            user_id=request.user_id, 
+            user_id=current_user_id, 
             mode=request.mode.upper(),
             category=request.category,
             status="IN_PROGRESS",
@@ -102,14 +105,16 @@ async def generate_bingo_board(
 
 
 @router.patch("/cells/{cell_id}")
-async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_db)):
+async def update_bingo_cell_completion(cell_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)):
     """
     특정 빙고 셀의 상태를 완료(COMPLETED)로 업데이트합니다.
     - status: 'COMPLETED'
     - is_completed: 1
     - completed_at: 현재 시간
     """
-    cell = db.query(BingoCell).filter(BingoCell.id == cell_id).first()
+    cell = db.query(BingoCell).options(joinedload(BingoCell.board)).filter(BingoCell.id == cell_id).first()
 
     if not cell:
         raise HTTPException(status_code=404, detail="Bingo cell not found")
@@ -117,7 +122,8 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
     try:
         cell.status = "COMPLETED"
         cell.is_completed = 1
-        cell.completed_at = datetime.now()
+        KST = timezone(timedelta(hours=9))
+        cell.completed_at = datetime.now(KST)
 
         db.commit()
         db.refresh(cell)
@@ -138,13 +144,14 @@ async def update_bingo_cell_completion(cell_id: int, db: Session = Depends(get_d
 
 @router.get("/active", response_model=ActiveBingoResponse)
 def get_active_bingo(
-    user_id: int, # 실제로는 인증 미들웨어를 통해 가져와야 합니다.
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
 ):
+    user_id = current_user.id
     # 1. 사용자의 진행 중인 보드 조회 (셀 정보 포함)
     active_board = (
         db.query(BingoBoard)
-        .options(joinedload(BingoBoard.cells)) # 관계 설정이 되어 있다고 가정
+        .options(joinedload(BingoBoard.cells)) 
         .filter(
             BingoBoard.user_id == user_id,
             BingoBoard.status == "IN_PROGRESS"
@@ -169,12 +176,13 @@ def check_active_bingo(
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user)
 ):
-    """오늘 생성된 '진행 중'인 빙고판이 있는지 확인"""
-    today_start = datetime.combine(date.today(), time.min)
-    today_end = datetime.combine(date.today(), time.max)
+    KST = timezone(timedelta(hours=9))
+    today_kst = datetime.now(KST).date()
+    today_start = datetime.combine(today_kst, time.min)
+    today_end = datetime.combine(today_kst, time.max)
 
     active_board = db.query(BingoBoard).filter(
-        BingoBoard.user_id == current_user.id,
+        BingoBoard.user_id == current_user.id,  # 인증된 유저 id 사용
         BingoBoard.status == BoardStatus.IN_PROGRESS,
         BingoBoard.created_at >= today_start,
         BingoBoard.created_at <= today_end
