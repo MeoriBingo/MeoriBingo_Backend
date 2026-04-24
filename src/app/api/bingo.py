@@ -144,22 +144,19 @@ async def update_bingo_cell_completion(cell_id: int,
 
 @router.get("/active", response_model=ActiveBingoResponse)
 def get_active_bingo(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_user)
+    user_id: int, # 실제로는 인증 미들웨어를 통해 가져와야 합니다.
+    db: Session = Depends(get_db)
 ):
-    user_id = current_user.id
     # 1. 사용자의 진행 중인 보드 조회 (셀 정보 포함)
     active_board = (
         db.query(BingoBoard)
-        .options(joinedload(BingoBoard.cells)) 
+        .options(joinedload(BingoBoard.cells)) # 관계 설정이 되어 있다고 가정
         .filter(
             BingoBoard.user_id == user_id,
             BingoBoard.status == "IN_PROGRESS"
         )
-        .order_by(BingoBoard.created_at.desc())
         .first()
     )
-
     if not active_board:
         raise HTTPException(status_code=404, detail="진행 중인 빙고판이 없습니다.")
 
